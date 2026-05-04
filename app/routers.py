@@ -85,23 +85,98 @@ Endpoint: DELETE /api/tickets/{ticket_id} HTTP 200
   "success": true
 }
 
-https://habr.com/ru/articles/828328/
+
+
+# Группа: Общее
+GET /api/health:
+    ВЕРНУТЬ {"status": "ok"}
+
+POST /api/sync/trigger:
+    ЗАПУСТИТЬ run_sync_process() в фоне
+    ВЕРНУТЬ 200 "Синхронизация запущена"
+
+# Группа: События (Работа с локальной БД)
+GET /api/events:
+    ПРИНЯТЬ date_from, page, page_size
+    query = SELECT FROM Events WHERE time >= date_from
+    results = ПРИМЕНИТЬ пагинацию к query (LIMIT page_size OFFSET (page-1)*page_size)
+    ВЕРНУТЬ {count, results, next_link, prev_link}
+
+GET /api/events/{id}:
+    event = SELECT FROM Events WHERE id = {id}
+    ЕСЛИ нет: ВЕРНУТЬ 404
+    ИНАЧЕ: ВЕРНУТЬ event
+
+# Группа: Интерактив (Работа через кэш или прокси)
+GET /api/events/{id}/seats:
+    ЕСЛИ есть в кэше {id}_seats И время < 30 сек:
+        ВЕРНУТЬ данные из кэша
+    ИНАЧЕ:
+        seats = ProviderClient.get_seats(id)
+        СОХРАНИТЬ seats в кэш
+        ВЕРНУТЬ seats
+
+POST /api/tickets:
+    ПРОВЕРИТЬ валидность email и ID события
+    result = ProviderClient.register_ticket(request_body)
+    ВЕРНУТЬ result.ticket_id (201)
+
+DELETE /api/tickets/{id}:
+    УДАЛИТЬ ЧЕРЕЗ ProviderClient.cancel_ticket(id)
+    ВЕРНУТЬ {"success": true}
 """
+from datetime import datetime
+from http.client import HTTPResponse
+from typing import Optional
+
+from fastapi import APIRouter, Depends
+from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_db
 from app.main import app
+from app.models import Events
+
+router = APIRouter(prefix="/api", tags=["Работа с API"])
 
 
-@app.get("/health")
+@router.get("/health")
 def health_check():
     if HTTPResponse == 200:
         return {"health": "ok"}
     return "Error"
 
 
-@app.get("/events")
-async def get_events():
-    pass
+@router.get("/events")
+async def get_events(date_form: datetime,
+                     page: Optional[int] = 1,
+                     page_size: Optional[int] = 20,
+                     db: AsyncSession = Depends(get_db)):
+    query = select(Events)
+    if date_form:
+        query = query.where(Events.event_time >= date_form)
 
-@app.get("/events/{event_id")
-async def get_events_id():
-    pass
+    count_query = select(func.count()).select_from(query.subquery())
+    total_count = (await db.execute(count_query)).scalar()
 
+    offset = (page - 1) * page_size
+    query = query.limit(page_size).offset(offset)
+
+    result = await db.execute(query)
+    events = result.scalars().all()
+
+    base_url = "/api/events/"
+    next_link = f"{base_url}?page={page + 1}&page_size={page_size}" if offset + page_size < total_count else None
+    prev_link = f"{base_url}?page={page - 1}&page_size={page_size}" if page > 1 else None
+
+    return {
+        "count": total_count,
+        "next": next_link,
+        "previous": prev_link,
+        "results": events
+    }
+
+@app.get("/events/{event_id}")
+async def get_events_id(db: AsyncSession = Depends(get_db)):
+    event = select(Events).where(Events.id == "{event_id}")
+    if

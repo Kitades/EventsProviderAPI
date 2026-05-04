@@ -13,7 +13,13 @@
 """
 from fastapi import FastAPI
 
+EXTERNAL_API_URL = "https://events-provider.com/api"
+SYNC_INTERVAL = 24*60*60
+SEATS_CACHE_TTL = 30
+INITIAL_SYNC_DATE = "2000-01-01"
+
 app = FastAPI()
+app.include_router()
 
 if __name__ == "__main__":
     pass

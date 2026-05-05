@@ -1,20 +1,5 @@
-"""
-ТАБЛИЦА Events:
-    id: UUID (Уникальный ключ)
-    name: Строка
-    city: Строка
-    address: Строка
-    event_time: ДатаВремя
-    registration_deadline: ДатаВремя
-    status: Строка (published/cancelled)
-    visitors_count: Число
 
-ТАБЛИЦА SyncMetadata:
-    last_sync_time: ДатаВремя
-    last_changed_at: ДатаВремя
-    status: Строка (success/error)
-"""
-import datetime
+from datetime import datetime
 import enum
 import uuid
 from sqlalchemy import Text, Enum, DateTime, func, Integer
@@ -39,7 +24,7 @@ class Base(DeclarativeBase):
     __abstract__ = True
 
 
-class Events(Base):
+class EventsModel(Base):
     id: Mapped[pk_id]
     name: Mapped[str] = mapped_column(Text, nullable=False)
 
@@ -58,7 +43,7 @@ class Events(Base):
     )
 
 
-class SyncMetadata(Base):
+class SyncMetadataModel(Base):
     id: Mapped[pk_id]
     last_sync_time: Mapped[timestamp]
     last_changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

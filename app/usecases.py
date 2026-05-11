@@ -1,7 +1,7 @@
 import uuid
 
-from protocols import EventRepositoryProtocol, EventsProviderClientProtocol, SyncRepositoryProtocol
-from client import EventPaginator
+from .protocols import EventRepositoryProtocol, EventsProviderClientProtocol, SyncRepositoryProtocol
+from .client import EventPaginator
 
 
 class SyncEventUsecase:

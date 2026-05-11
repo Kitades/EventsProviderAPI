@@ -7,13 +7,6 @@ from app.usecases import SyncEventUsecase, CreateTicketUsecase
 router = APIRouter(prefix="/api", tags=["Работа с API"])
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("Start server")
-    yield
-    print("stop server")
-
-
 @router.post("/sync")
 async def trigger_sync(
         background_tasks: BackgroundTasks,
@@ -21,6 +14,11 @@ async def trigger_sync(
 ):
     background_tasks.add_task(usecase.execute)
     return {"status": "sync task"}
+
+
+@router.get("/health")
+async def health_check():
+    return {"status": "ok"}
 
 
 @router.post("/tickets")

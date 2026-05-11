@@ -25,7 +25,7 @@ class EventRepository:
             new_event = EventsModel(**event_data)
             self.session.add(new_event)
 
-        await self.session.flush()
+        await self.session.commit()
 
 
 class SyncRepositories:

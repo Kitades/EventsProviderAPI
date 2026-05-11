@@ -1,14 +1,22 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from app.routers import router
 
-from app import routers
-from app.routers import lifespan
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Start server")
+    try:
+        yield
+    finally:
+        print("Stop server")
+
 
 app = FastAPI(lifespan=lifespan)
 
-
-def main():
-    app.include_router(routers.router)
-
+app.include_router(router)
 
 if __name__ == "__main__":
-    main()
+    import uvicorn
+
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

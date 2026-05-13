@@ -9,7 +9,7 @@ class WebAppSettings(BaseSettings):
         env_file=".env",
         extra="ignore",
         env_file_encoding="utf-8",
-        populate_by_name=True
+        populate_by_name=True,
     )
 
     def get_db_url(self):

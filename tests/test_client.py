@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import AsyncMock, patch
 from app.client import EventProviderClient
 
+
 @pytest.mark.asyncio
 async def test_client_get_events_success():
     # Мокаем AsyncClient внутри httpx
@@ -9,7 +10,7 @@ async def test_client_get_events_success():
         # Настраиваем фейковый ответ от сервера
         mock_get.return_value = AsyncMock(
             status_code=200,
-            json=lambda: {"results": [{"id": "ev-1"}], "next": "cursor-2"}
+            json=lambda: {"results": [{"id": "ev-1"}], "next": "cursor-2"},
         )
 
         client = EventProviderClient(base_url="http://api.test", api_key="token")

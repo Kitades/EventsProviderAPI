@@ -33,7 +33,9 @@ class SyncRepositories:
         self.session = session
 
     async def get_last_metadata(self):
-        query = select(SyncMetadataModel).order_by(SyncMetadataModel.last_sync_time.desc().limit(1))
+        query = select(SyncMetadataModel).order_by(
+            SyncMetadataModel.last_sync_time.desc().limit(1)
+        )
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 

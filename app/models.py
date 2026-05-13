@@ -1,13 +1,15 @@
-
 from datetime import datetime
 import enum
 import uuid
+from typing import Annotated
 from sqlalchemy import Text, Enum, DateTime, func, Integer
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-from sqlalchemy.sql.annotation import Annotated
+
 
 pk_id = Annotated[uuid.UUID, mapped_column(primary_key=True, default=uuid.uuid4)]
-timestamp = Annotated[datetime, mapped_column(DateTime(timezone=True), server_default=func.now())]
+timestamp = Annotated[
+    datetime, mapped_column(DateTime(timezone=True), server_default=func.now())
+]
 
 
 class EventStatus(enum.Enum):
@@ -25,6 +27,7 @@ class Base(DeclarativeBase):
 
 
 class EventsModel(Base):
+    __tablename__ = 'event'
     id: Mapped[pk_id]
     name: Mapped[str] = mapped_column(Text, nullable=False)
 
@@ -38,12 +41,12 @@ class EventsModel(Base):
 
     visitors_count: Mapped[int] = mapped_column(Integer, default=0)
     status: Mapped[EventStatus] = mapped_column(
-        Enum(EventStatus, native_enum=False),
-        default=EventStatus.published
+        Enum(EventStatus, native_enum=False), default=EventStatus.published
     )
 
 
 class SyncMetadataModel(Base):
+    __tablename__ = 'sync'
     id: Mapped[pk_id]
     last_sync_time: Mapped[timestamp]
     last_changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

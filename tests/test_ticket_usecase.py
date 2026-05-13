@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock
 from app.usecases import CreateTicketUsecase
 
+
 @pytest.mark.asyncio
 async def test_ticket_creation_prevented_for_cancelled_event():
     mock_client = AsyncMock()

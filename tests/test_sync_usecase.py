@@ -15,8 +15,7 @@ async def test_sync_usecase_flow():
 
     # Имитируем ответ провайдера (одна страница)
     mock_client.get_events.return_value = MagicMock(
-        items=[{"id": "event-99", "changed_at": "2023-05-05"}],
-        next_cursor=None
+        items=[{"id": "event-99", "changed_at": "2023-05-05"}], next_cursor=None
     )
 
     usecase = SyncEventUsecase(mock_client, mock_event_repo, mock_sync_repo)

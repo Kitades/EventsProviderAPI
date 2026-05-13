@@ -9,10 +9,8 @@ async def test_paginator_successful_iteration():
     mock_client = AsyncMock()
 
     mock_client.events.side_effect = [
-
         MagicMock(items=[{"id": 1}, {"id": 2}], next_cursor="page_2"),
-
-        MagicMock(items=[{"id": 3}], next_cursor=None)
+        MagicMock(items=[{"id": 3}], next_cursor=None),
     ]
 
     paginator = EventPaginator(client=mock_client, start_cursor="page_1")

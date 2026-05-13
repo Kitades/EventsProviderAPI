@@ -15,10 +15,11 @@ class EventProviderClient:
 
     async def get_events(self, cursor: str) -> ProviderResponse:
         async with httpx.AsyncClient() as client:
-            response = client.get(f"{self.base_url}/events",
-                                  params={"changed_at": cursor},
-                                  headers=self.headers
-                                  )
+            response = client.get(
+                f"{self.base_url}/events",
+                params={"changed_at": cursor},
+                headers=self.headers,
+            )
             data = response.json()
             return ProviderResponse(item=data["results"], next_cursor=data.get("next"))
 

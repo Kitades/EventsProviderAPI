@@ -13,10 +13,10 @@ from app.repositories import EventRepository
 from app.schemas import EventResponseSchema, EventSeatsResponse
 from app.usecases import SyncEventUsecase, CreateTicketUsecase
 
-router = APIRouter(prefix="/api", tags=["Работа с API"])
+router = APIRouter()
 
 
-@router.post("/sync/trigger")
+@router.post("/api/sync/trigger")
 async def trigger_sync(
     background_tasks: BackgroundTasks,
     usecase: SyncEventUsecase = Depends(get_sync_usecase),
@@ -25,12 +25,12 @@ async def trigger_sync(
     return {"status": "sync task"}
 
 
-@router.get("/health")
+@router.get("/api/health")
 async def health_check():
     return {"status": "ok"}
 
 
-@router.post("/tickets")
+@router.post("/api/tickets")
 async def create_ticket(
     event_id: str,
     first_name: str,
@@ -41,8 +41,29 @@ async def create_ticket(
     ticket_id = await usecase.execute(event_id, first_name, last_name, seat)
     return {"ticket_id": ticket_id}
 
+@router.get("/api/events", response_model=list[EventResponseSchema])
+async def get_events(repo: EventRepository = Depends(get_event_repository))
+    events = await repo.get_all()
+    return [
+        {
+            "id": e.id,
+            "name": e.name,
+            "event_time": e.event_time,
+            "registration_deadline": e.registration_deadline,
+            "visitors_count": e.visitors_count,
+            "status": e.status,
+            "place": {
+                "id": e.place_id,
+                "name": e.place_name,
+                "city": e.city,
+                "address": e.address,
+                "seats_pattern": e.seats_pattern
+            }
+        }for e in events
+    ]
 
-@router.get("/events/{event_id}", response_model=EventResponseSchema)
+
+@router.get("/api/events/{event_id}", response_model=EventResponseSchema)
 async def get_event_detail(
     event_id: uuid.UUID, repo: EventRepository = Depends(get_event_repository)
 ):
@@ -66,7 +87,7 @@ async def get_event_detail(
     }
 
 
-@router.get("events/{event_id}/seats", response_model=EventSeatsResponse)
+@router.get("/api/events/{event_id}/seats", response_model=EventSeatsResponse)
 async def get_seats(
     event_id: uuid.UUID, client: EventProviderClient = Depends(get_event_client)
 ):

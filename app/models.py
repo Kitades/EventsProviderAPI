@@ -27,7 +27,7 @@ class Base(DeclarativeBase):
 
 
 class EventsModel(Base):
-    __tablename__ = 'event'
+    __tablename__ = "event"
     id: Mapped[pk_id]
     name: Mapped[str] = mapped_column(Text, nullable=False)
 
@@ -35,6 +35,7 @@ class EventsModel(Base):
     place_name: Mapped[str]
     city: Mapped[str]
     address: Mapped[str]
+    seats_pattern: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     event_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     registration_deadline: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -46,7 +47,7 @@ class EventsModel(Base):
 
 
 class SyncMetadataModel(Base):
-    __tablename__ = 'sync'
+    __tablename__ = "sync"
     id: Mapped[pk_id]
     last_sync_time: Mapped[timestamp]
     last_changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

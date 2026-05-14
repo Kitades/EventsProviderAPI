@@ -11,11 +11,15 @@ def get_event_client():
     return EventProviderClient(base_url="https://api.provider.com", api_key="secret")
 
 
+def get_event_repository(db: AsyncSession = Depends(get_db)):
+    return EventRepository(db)
+
+
 def get_sync_usecase(
+    event_repo: EventRepository = Depends(get_event_repository),
     db: AsyncSession = Depends(get_db),
     client: EventProviderClient = Depends(get_event_client),
 ):
-    event_repo = EventRepository(db)
     sync_repo = SyncRepositories(db)
     return SyncEventUsecase(client, event_repo, sync_repo)
 

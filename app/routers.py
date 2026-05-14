@@ -1,6 +1,6 @@
 import uuid
 import fastapi
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, Depends
 
 from app.client import EventProviderClient
 from app.dependencies import (
@@ -18,11 +18,10 @@ router = APIRouter()
 
 @router.post("/api/sync/trigger")
 async def trigger_sync(
-    background_tasks: BackgroundTasks,
     usecase: SyncEventUsecase = Depends(get_sync_usecase),
 ):
-    background_tasks.add_task(usecase.execute)
-    return {"status": "sync task"}
+    await usecase.execute()
+    return {"status": "ok"}
 
 
 @router.get("/api/health")
@@ -45,14 +44,14 @@ async def create_ticket(
 @router.get("/api/events", response_model=list[EventResponseSchema])
 async def get_events(repo: EventRepository = Depends(get_event_repository)):
     events = await repo.get_all()
-    return [
+    results = [
         {
             "id": e.id,
             "name": e.name,
             "event_time": e.event_time,
             "registration_deadline": e.registration_deadline,
-            "visitors_count": e.visitors_count,
             "status": e.status,
+            "number_of_visitors": e.visitors_count,
             "place": {
                 "id": e.place_id,
                 "name": e.place_name,
@@ -63,6 +62,7 @@ async def get_events(repo: EventRepository = Depends(get_event_repository)):
         }
         for e in events
     ]
+    return {"count": len(results), "next": None, "previous": None, "results": results}
 
 
 @router.get("/api/events/{event_id}", response_model=EventResponseSchema)

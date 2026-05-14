@@ -1,13 +1,3 @@
-from fastapi import FastAPI
-
-app = FastAPI()
-
-
-@app.get("/api/health")
-def health():
-    return {"status": "ok"}
-
-
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.routers import router
@@ -15,11 +5,10 @@ from app.routers import router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Start server")
     try:
         yield
     finally:
-        print("Stop server")
+        pass
 
 
 app = FastAPI(lifespan=lifespan)

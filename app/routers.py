@@ -41,8 +41,9 @@ async def create_ticket(
     ticket_id = await usecase.execute(event_id, first_name, last_name, seat)
     return {"ticket_id": ticket_id}
 
+
 @router.get("/api/events", response_model=list[EventResponseSchema])
-async def get_events(repo: EventRepository = Depends(get_event_repository))
+async def get_events(repo: EventRepository = Depends(get_event_repository)):
     events = await repo.get_all()
     return [
         {
@@ -57,9 +58,10 @@ async def get_events(repo: EventRepository = Depends(get_event_repository))
                 "name": e.place_name,
                 "city": e.city,
                 "address": e.address,
-                "seats_pattern": e.seats_pattern
-            }
-        }for e in events
+                "seats_pattern": e.seats_pattern,
+            },
+        }
+        for e in events
     ]
 
 

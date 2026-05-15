@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.11-slim
+FROM astralsh/uv:python3.11-slim
 
 
 WORKDIR /app

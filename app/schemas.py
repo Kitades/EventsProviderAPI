@@ -1,3 +1,5 @@
+from typing import Optional, List
+
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 import uuid
@@ -18,11 +20,17 @@ class EventResponseSchema(BaseModel):
     name: str
     event_time: datetime
     registration_deadline: datetime
-    visitors_count: int
+    number_of_visitors: int
     status: str
     place: PlaceSchema
 
     model_config = ConfigDict(from_attributes=True)
+
+class EventsListResponseSchema(BaseModel):
+    count: int
+    next: Optional[str] = None
+    previous: Optional[str] = None
+    results: List[EventResponseSchema]
 
 
 class SeatSchema(BaseModel):

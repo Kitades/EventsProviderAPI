@@ -1,6 +1,9 @@
 import uuid
+from datetime import datetime
+from typing import Optional
+
 import fastapi
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.client import EventProviderClient
 from app.dependencies import (
@@ -10,7 +13,7 @@ from app.dependencies import (
     get_event_client,
 )
 from app.repositories import EventRepository
-from app.schemas import EventResponseSchema, EventSeatsResponse
+from app.schemas import EventResponseSchema, EventSeatsResponse, EventsListResponseSchema
 from app.usecases import SyncEventUsecase, CreateTicketUsecase
 
 router = APIRouter()
@@ -41,28 +44,26 @@ async def create_ticket(
     return {"ticket_id": ticket_id}
 
 
-@router.get("/api/events", response_model=list[EventResponseSchema])
-async def get_events(repo: EventRepository = Depends(get_event_repository)):
-    events = await repo.get_all()
-    results = [
-        {
-            "id": e.id,
-            "name": e.name,
-            "event_time": e.event_time,
-            "registration_deadline": e.registration_deadline,
-            "status": e.status,
-            "number_of_visitors": e.visitors_count,
-            "place": {
-                "id": e.place_id,
-                "name": e.place_name,
-                "city": e.city,
-                "address": e.address,
-                "seats_pattern": e.seats_pattern,
-            },
-        }
-        for e in events
-    ]
-    return {"count": len(results), "next": None, "previous": None, "results": results}
+@router.get("/api/events", response_model=EventsListResponseSchema)
+async def get_events(
+        limit: int = Query(10, ge=1),
+        offset: int = Query(0, ge=0),
+        data_from: Optional[datetime] = None,
+        repo: EventRepository = Depends(get_event_repository)
+):
+
+    total_count, events = await repo.get_all(
+        data_from=data_from,
+        limit=limit,
+        offset=offset
+    )
+
+    return {
+        "count": total_count,
+        "next": None,
+        "previous": None,
+        "results": events
+    }
 
 
 @router.get("/api/events/{event_id}", response_model=EventResponseSchema)
@@ -77,7 +78,7 @@ async def get_event_detail(
         "name": event.name,
         "event_time": event.event_time,
         "registration_deadline": event.registration_deadline,
-        "visitors_count": event.visitors_count,
+        "number_of_visitors": event.number_of_visitors,
         "status": event.status,
         "place": {
             "id": event.place_id,

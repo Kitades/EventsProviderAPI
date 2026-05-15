@@ -1,5 +1,8 @@
 import uuid
-from sqlalchemy import select
+from datetime import datetime
+from typing import Tuple, Optional
+
+from sqlalchemy import select, func
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +17,25 @@ class EventRepository:
         query = select(EventsModel).where(EventsModel.id == event_id)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
+
+    async def get_all(
+            self, data_from: Optional[datetime], limit: int, offset: int
+    ) -> Tuple[int, list]:
+        # 1. Формируем базовый запрос
+        query = select(EventsModel)
+
+        if data_from:
+            query = query.where(EventsModel.event_time >= data_from)
+
+        count_query = select(func.count()).select_from(query.subquery())
+        count_result = await self.session.execute(count_query)
+        total_count = count_result.scalar_one()
+
+        query = query.limit(limit).offset(offset)
+        result = await self.session.execute(query)
+        events = result.scalars().all()
+
+        return total_count, list(events)
 
     async def upsert(self, event_data: dict):
         event = await self.get_by_id(event_data["id"])
@@ -34,12 +56,16 @@ class SyncRepositories:
 
     async def get_last_metadata(self):
         query = select(SyncMetadataModel).order_by(
-            SyncMetadataModel.last_sync_time.desc().limit(1)
-        )
+            SyncMetadataModel.last_sync_time.desc()
+        ).limit(1)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
     async def create_log(self, status: str, last_changed_at):
-        new_log = SyncMetadataModel(status=status, last_changed_at=last_changed_at)
+        new_log = SyncMetadataModel(
+            id=uuid.uuid4(),
+            status=status,
+            last_changed_at=last_changed_at
+        )
         self.session.add(new_log)
         await self.session.commit()

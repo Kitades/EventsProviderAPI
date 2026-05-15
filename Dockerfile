@@ -1,16 +1,18 @@
-# Используем официальный микро-образ со встроенным uv и python 3.11
 FROM ghcr.io/astral-sh/uv:python3.11-slim
+
 
 WORKDIR /app
 
 
-ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy \
+    UV_COMPILE_BYTECODE=1 \
+    PYTHONPATH=/app
 
 
-COPY requirements.txt .
+COPY pyproject.toml uv.lock* ./
 
 
-RUN uv pip install --system --no-cache -r requirements.txt
+RUN uv sync --frozen --no-dev
 
 
 COPY ./app ./app
@@ -23,4 +25,4 @@ RUN addgroup --system --gid 1000 appuser && \
 USER appuser
 
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

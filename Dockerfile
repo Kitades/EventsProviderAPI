@@ -9,7 +9,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project
 
-COPY --chown=appuser:appuser ./main.py .
+COPY --chown=appuser:appuser /app/main.py .
 
 USER appuser
 

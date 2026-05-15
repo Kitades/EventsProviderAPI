@@ -1,4 +1,7 @@
-FROM ghcr.io/astral-sh/uv:0.1.0-python3.11-slim
+FROM --platform=linux/x86_64 <http://ghcr.io/astral-sh/uv:python3.11-bookworm-slim|ghcr.io/astral-sh/uv:python3.11-bookworm-slim>
+COPY pyproject.toml pyproject.toml
+COPY uv.lock uv.lock
+RUN uv sync --frozen
 
 
 WORKDIR /app
@@ -8,11 +11,6 @@ ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
     PYTHONPATH=/app
 
-
-COPY pyproject.toml uv.lock* ./
-
-
-RUN uv sync --frozen --no-dev
 
 
 COPY ./app ./app

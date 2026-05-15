@@ -6,9 +6,13 @@ RUN addgroup --system --gid 1000 appuser && \
 
 WORKDIR /app
 
+ENV UV_LINK_MODE=copy \
+    UV_COMPILE_BYTECODE=1 \
+    PYTHONPATH=/app
+
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project
-
+COPY ./app ./app
 COPY --chown=appuser:appuser /app/main.py .
 
 USER appuser

@@ -40,7 +40,9 @@ class EventsModel(Base):
     event_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     registration_deadline: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
-    number_of_visitors: Mapped[int] = mapped_column("visitors_count", Integer, default=0)
+    number_of_visitors: Mapped[int] = mapped_column(
+        "visitors_count", Integer, default=0
+    )
     status: Mapped[EventStatus] = mapped_column(
         Enum(EventStatus, native_enum=False), default=EventStatus.published
     )

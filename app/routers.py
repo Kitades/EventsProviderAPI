@@ -13,7 +13,11 @@ from app.dependencies import (
     get_event_client,
 )
 from app.repositories import EventRepository
-from app.schemas import EventResponseSchema, EventSeatsResponse, EventsListResponseSchema
+from app.schemas import (
+    EventResponseSchema,
+    EventSeatsResponse,
+    EventsListResponseSchema,
+)
 from app.usecases import SyncEventUsecase, CreateTicketUsecase
 
 router = APIRouter()
@@ -46,24 +50,17 @@ async def create_ticket(
 
 @router.get("/api/events", response_model=EventsListResponseSchema)
 async def get_events(
-        limit: int = Query(10, ge=1),
-        offset: int = Query(0, ge=0),
-        data_from: Optional[datetime] = None,
-        repo: EventRepository = Depends(get_event_repository)
+    limit: int = Query(10, ge=1),
+    offset: int = Query(0, ge=0),
+    data_from: Optional[datetime] = None,
+    repo: EventRepository = Depends(get_event_repository),
 ):
 
     total_count, events = await repo.get_all(
-        data_from=data_from,
-        limit=limit,
-        offset=offset
+        data_from=data_from, limit=limit, offset=offset
     )
 
-    return {
-        "count": total_count,
-        "next": None,
-        "previous": None,
-        "results": events
-    }
+    return {"count": total_count, "next": None, "previous": None, "results": events}
 
 
 @router.get("/api/events/{event_id}", response_model=EventResponseSchema)

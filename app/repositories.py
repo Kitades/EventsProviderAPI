@@ -77,7 +77,9 @@ class SyncRepositories:
 
     async def create_log(self, status: str, last_changed_at):
         new_log = SyncMetadataModel(
-            id=uuid.uuid4(), status=status, last_changed_at=last_changed_at
+            id=uuid.uuid4(),
+            status=status,
+            last_changed_at=last_changed_at
         )
         self.session.add(new_log)
         await self.session.commit()

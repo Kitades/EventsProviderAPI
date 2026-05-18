@@ -1,7 +1,7 @@
 import uuid
-from typing import List, Dict, Any, Optional
+from datetime import datetime
+
 import httpx
-from pydantic import BaseModel
 
 from app.schemas import ProviderResponse
 
@@ -14,8 +14,9 @@ class EventProviderClient:
     async def get_events(self, cursor: str) -> ProviderResponse:
         url = f"{self.base_url}/api/events/"
         params = {}
-        if cursor:
-            params["changed_at"] = str(cursor)
+        if isinstance(cursor, datetime):
+            params["changed_at"] = cursor.strftime('%Y-%m-%dT%H:%M:%SZ')
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 url,
@@ -26,7 +27,7 @@ class EventProviderClient:
             data = response.json()
 
             return ProviderResponse(
-                item=data.get("results", []),
+                results=data.get("results", []),
                 next_cursor=data.get("next")
             )
 

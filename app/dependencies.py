@@ -11,7 +11,7 @@ from app.usecases import SyncEventUsecase, CreateTicketUsecase
 
 def get_event_client():
     return EventProviderClient(
-        base_url=settings.get_db_url(),
+        base_url=settings.get_provider_url(),
         api_key=settings.get_return_api_key()
     )
 

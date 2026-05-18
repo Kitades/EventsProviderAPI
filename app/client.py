@@ -12,15 +12,16 @@ class ProviderResponse(BaseModel):
 class EventProviderClient:
     def __init__(self, base_url: str, api_key: str):
         self.base_url = base_url
-        self.headers = {"Authorization": f"{api_key}"}
+        self.headers = {"x-api-key": f"{api_key}"}
 
     async def get_events(self, cursor: str) -> ProviderResponse:
+        url = f"{self.base_url}/api/events/"
         params = {}
         if cursor:
             params["changed_at"] = str(cursor)
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"{self.base_url}/events",
+                url,
                 params={"changed_at": cursor},
                 headers=self.headers,
             )
@@ -28,12 +29,12 @@ class EventProviderClient:
             data = response.json()
 
             return ProviderResponse(
-                item=data["results"],
+                item=data.get("results", []),
                 next_cursor=data.get("next")
             )
 
     async def get_event_seats(self, event_id: uuid.UUID):
-        url = f"{self.base_url}/api/events/{event_id}/seats"
+        url = f"{self.base_url}/api/events/{event_id}/seats/"
         async with httpx.AsyncClient() as client:
             response = await client.get(url, headers=self.headers)
             if response.status_code != 200:

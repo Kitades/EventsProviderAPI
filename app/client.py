@@ -16,6 +16,8 @@ class EventProviderClient:
         params = {}
         if isinstance(cursor, datetime):
             params["changed_at"] = cursor.strftime('%Y-%m-%dT%H:%M:%SZ')
+        elif cursor:
+            params["changed_at"] = cursor
 
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -51,9 +53,9 @@ class EventPaginator:
         return self
 
     async def __anext__(self):
-        if not self.buffer and not self.is_exhausted:
+        while not self.buffer and not self.is_exhausted:
             response = await self.client.get_events(self.cursor)
-            self.buffer = response.results
+            self.buffer.extend(response.results or [])
             self.cursor = response.next_cursor
             if not self.cursor:
                 self.is_exhausted = True

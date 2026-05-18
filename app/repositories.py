@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Tuple, Optional
 
 from sqlalchemy import select, func
@@ -69,11 +69,16 @@ class SyncRepositories:
     async def update_sync_info(self, last_changed_at, status):
         if isinstance(last_changed_at, str):
             try:
-                last_changed_at = datetime.fromisoformat(last_changed_at)
+                last_changed_at = datetime.fromisoformat(
+                    last_changed_at.replace("Z", "+00:00")
+                )
             except ValueError:
-                last_changed_at = datetime.strptime(last_changed_at, "%Y-%m-%d")
+                last_changed_at = datetime.strptime(
+                    last_changed_at, "%Y-%m-%d"
+                ).replace(tzinfo=UTC)
+
         sync_log = SyncMetadataModel(
-            last_sync_time=datetime.utcnow(),
+            last_sync_time=datetime.now(UTC),
             last_changed_at=last_changed_at,
             status=status
         )
@@ -91,9 +96,9 @@ class SyncRepositories:
 
     async def get_last_cursor(self):
         meta = await self.get_last_metadata()
-        if meta:
-            return meta.last_sync_time.isoformat() if hasattr(meta.last_sync_time, "isoformat") else meta.last_sync_time
-        return None
+        if not meta or not meta.last_changed_at:
+            return None
+        return meta.last_changed_at.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     async def create_log(self, status: str, last_changed_at):
         new_log = SyncMetadataModel(

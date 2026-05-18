@@ -3,10 +3,7 @@ from typing import List, Dict, Any, Optional
 import httpx
 from pydantic import BaseModel
 
-
-class ProviderResponse(BaseModel):
-    item: List[Dict[str, Any]]
-    next_cursor: Optional[str]
+from app.schemas import ProviderResponse
 
 
 class EventProviderClient:
@@ -55,7 +52,7 @@ class EventPaginator:
     async def __anext__(self):
         if not self.buffer and not self.is_exhausted:
             response = await self.client.get_events(self.cursor)
-            self.buffer = response.items
+            self.buffer = response.results
             self.cursor = response.next_cursor
             if not self.cursor:
                 self.is_exhausted = True

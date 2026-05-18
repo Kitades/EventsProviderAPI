@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from datetime import datetime
@@ -48,6 +48,11 @@ class EventResponseSchema(BaseModel):
                 },
             }
         return data
+
+
+class ProviderResponse(BaseModel):
+    results: List[Dict[str, Any]]
+    next_cursor: Optional[str]
 
 
 class EventsListResponseSchema(BaseModel):

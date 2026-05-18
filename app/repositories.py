@@ -67,6 +67,11 @@ class SyncRepositories:
         self.session = session
 
     async def update_sync_info(self, last_changed_at, status):
+        if isinstance(last_changed_at, str):
+            try:
+                last_changed_at = datetime.fromisoformat(last_changed_at)
+            except ValueError:
+                last_changed_at = datetime.strptime(last_changed_at, "%Y-%m-%d")
         sync_log = SyncMetadataModel(
             last_sync_time=datetime.utcnow(),
             last_changed_at=last_changed_at,

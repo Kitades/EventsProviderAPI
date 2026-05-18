@@ -66,6 +66,15 @@ class SyncRepositories:
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    async def update_sync_info(self, last_changed_at, status):
+        sync_log = SyncMetadataModel(
+            last_sync_time=datetime.utcnow(),
+            last_changed_at=last_changed_at,
+            status=status
+        )
+        self.session.add(sync_log)
+        await self.session.commit()
+
     async def get_last_metadata(self):
         query = (
             select(SyncMetadataModel)

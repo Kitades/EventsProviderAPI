@@ -52,6 +52,9 @@ class CreateTicketUsecase:
             raise Exception("Регистрация не возможна: Событие не опубликованно")
 
         ticket_id = await self.client.register(
-            event_id=event_id, first_name=first_name, last_name=last_name, seat=seat
+            event_id=event_id,
+            first_name=first_name,
+            last_name=last_name,
+            seat=seat
         )
         return ticket_id

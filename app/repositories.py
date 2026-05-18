@@ -19,7 +19,7 @@ class EventRepository:
         return result.scalar_one_or_none()
 
     async def get_all(
-        self, data_from: Optional[datetime], limit: int, offset: int
+            self, data_from: Optional[datetime], limit: int, offset: int
     ) -> Tuple[int, list]:
         # 1. Формируем базовый запрос
         query = select(EventsModel)
@@ -74,6 +74,12 @@ class SyncRepositories:
         )
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
+
+    async def get_last_cursor(self):
+        meta = await self.get_last_metadata()
+        if meta:
+            return meta.last_sync_time.isoformat() if hasattr(meta.last_sync_time, "isoformat") else meta.last_sync_time
+        return None
 
     async def create_log(self, status: str, last_changed_at):
         new_log = SyncMetadataModel(

@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime
 
 import httpx
 
@@ -11,18 +10,21 @@ class EventProviderClient:
         self.base_url = base_url
         self.headers = {"x-api-key": f"{api_key}"}
 
-    async def get_events(self, cursor: str) -> ProviderResponse:
-        url = f"{self.base_url}/api/events/"
-        params = {}
-        if isinstance(cursor, datetime):
-            params["changed_at"] = cursor.strftime('%Y-%m-%dT%H:%M:%SZ')
-        elif cursor:
-            params["changed_at"] = cursor
+    async def get_events(
+            self,
+            url: str | None = None,
+            changed_at: str | None = None,
+    ) -> ProviderResponse:
+        if url is None:
+            url = f"{self.base_url}/api/events/"
+            params = {"changed_at": changed_at}
+        else:
+            params = None
 
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 url,
-                params={"changed_at": cursor},
+                params=params,
                 headers=self.headers,
             )
             response.raise_for_status()
@@ -43,9 +45,10 @@ class EventProviderClient:
 
 
 class EventPaginator:
-    def __init__(self, client: EventProviderClient, start_cursor: str):
+    def __init__(self, client: EventProviderClient, changed_at):
         self.client = client
-        self.cursor = start_cursor
+        self.next_url = None
+        self.changed_at = changed_at
         self.buffer = []
         self.is_exhausted = False
 
@@ -54,10 +57,13 @@ class EventPaginator:
 
     async def __anext__(self):
         while not self.buffer and not self.is_exhausted:
-            response = await self.client.get_events(self.cursor)
-            self.buffer.extend(response.results or [])
-            self.cursor = response.next_cursor
-            if not self.cursor:
+            response = await self.client.get_events(
+                url=self.next_url,
+                changed_at=self.changed_at,
+            )
+            self.buffer.extend(response.results)
+            self.next_url = response.next_cursor
+            if not self.next_url:
                 self.is_exhausted = True
 
         if not self.buffer:

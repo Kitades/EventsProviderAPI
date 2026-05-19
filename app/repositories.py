@@ -21,7 +21,7 @@ class EventRepository:
     async def get_all(
             self, data_from: Optional[datetime], limit: int, offset: int
     ) -> Tuple[int, list]:
-        # 1. Формируем базовый запрос
+
         query = select(EventsModel)
 
         if data_from:
@@ -98,7 +98,7 @@ class SyncRepositories:
         meta = await self.get_last_metadata()
         if not meta or not meta.last_changed_at:
             return None
-        return meta.last_changed_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+        return meta.last_changed_at.strftime("%Y-%m-%d")
 
     async def create_log(self, status: str, last_changed_at):
         new_log = SyncMetadataModel(

@@ -15,6 +15,7 @@ timestamp = Annotated[
 class EventStatus(enum.Enum):
     published = "published"
     cancelled = "cancelled"
+    finished = "finished"
 
 
 class SyncStatus(enum.Enum):

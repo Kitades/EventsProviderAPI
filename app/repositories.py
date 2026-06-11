@@ -52,6 +52,8 @@ class EventRepository:
             "changed_at", "created_at", "updated_at", "deleted_at",
             "cursor", "status_changed_at", "modified_at", "published_at"
         ]
+        if 'status' in data:
+            data['status'] = data['status'][:9]
         for field in extra_fields:
             data.pop(field, None)
 

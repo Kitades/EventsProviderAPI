@@ -36,7 +36,6 @@ class EventRepository:
     async def upsert(self, event_data: dict):
         data = event_data.copy()
 
-        # Извлекаем place
         place = data.pop("place", None)
         if place and isinstance(place, dict):
             data["place_id"] = uuid.UUID(place.get("id"))
@@ -44,6 +43,10 @@ class EventRepository:
             data["city"] = place.get("city")
             data["address"] = place.get("address")
             data["seats_pattern"] = place.get("seats_pattern")
+
+        for field in ["event_time", "registration_deadline"]:
+            if field in data and isinstance(data[field], str):
+                data[field] = datetime.fromisoformat(data[field].replace('Z', '+00:00'))
 
         extra_fields = [
             "changed_at", "created_at", "updated_at", "deleted_at",
@@ -63,7 +66,11 @@ class EventRepository:
 
         new_event = EventsModel(**data)
         self.session.add(new_event)
-        await self.session.commit()
+        try:
+            await self.session.commit()
+        except Exception:
+            await self.session.rollback()
+            raise
 
 
 class SyncRepositories:
@@ -76,6 +83,9 @@ class SyncRepositories:
                 last_changed_at = datetime.fromisoformat(last_changed_at.replace("Z", "+00:00"))
             except ValueError:
                 last_changed_at = datetime.strptime(last_changed_at, "%Y-%m-%d").replace(tzinfo=UTC)
+
+        if not self.session.is_active:
+            await self.session.rollback()
 
         sync_log = SyncMetadataModel(
             last_sync_time=datetime.now(UTC),

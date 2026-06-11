@@ -58,3 +58,11 @@ class CreateTicketUsecase:
             seat=seat
         )
         return ticket_id
+
+
+class CancelTicketUsecase:
+    def __init__(self, client: EventsProviderClientProtocol):
+        self.client = client
+
+    async def execute(self, ticket_id: str) -> bool:
+        return await self.client.cancel_registration(ticket_id)

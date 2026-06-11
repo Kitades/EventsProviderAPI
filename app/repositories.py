@@ -49,7 +49,9 @@ class EventRepository:
             data["address"] = place.get("address")
             data["seats_pattern"] = place.get("seats_pattern")
         if "number_of_visitors" in data:
-            pass
+            data["visitors_count"] = data.pop("number_of_visitors")
+            data.pop("changed_at", None)
+
         event = await self.get_by_id(event_data["id"])
         if event:
             for key, value in event_data.items():

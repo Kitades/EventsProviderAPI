@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 import fastapi
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 
 from app.client import EventProviderClient
 from app.dependencies import (
@@ -16,7 +16,7 @@ from app.repositories import EventRepository
 from app.schemas import (
     EventResponseSchema,
     EventSeatsResponse,
-    EventsListResponseSchema,
+    EventsListResponseSchema, TicketCreateRequest,
 )
 from app.usecases import SyncEventUsecase, CreateTicketUsecase
 
@@ -25,7 +25,7 @@ router = APIRouter()
 
 @router.post("/api/sync/trigger")
 async def trigger_sync(
-    usecase: SyncEventUsecase = Depends(get_sync_usecase),
+        usecase: SyncEventUsecase = Depends(get_sync_usecase),
 ):
     await usecase.execute()
     return {"status": "ok"}
@@ -36,67 +36,77 @@ async def health_check():
     return {"status": "ok"}
 
 
-@router.post("/api/tickets")
+@router.post("/api/tickets", status_code=201)
 async def create_ticket(
-    event_id: str,
-    first_name: str,
-    last_name: str,
-    seat: str,
-    usecase: CreateTicketUsecase = Depends(get_ticket_usecase),
+        payload: TicketCreateRequest,
+        usecase: CreateTicketUsecase = Depends(get_ticket_usecase),
 ):
-    ticket_id = await usecase.execute(event_id, first_name, last_name, seat)
+    ticket_id = await usecase.execute(
+        event_id=payload.event_id,
+        first_name=payload.first_name,
+        last_name=payload.last_name,
+        email=payload.email,
+        seat=payload.seat,
+    )
     return {"ticket_id": ticket_id}
 
 
 @router.get("/api/events", response_model=EventsListResponseSchema)
 async def get_events(
-    limit: int = Query(10, ge=1),
-    offset: int = Query(0, ge=0),
-    data_from: Optional[datetime] = None,
-    repo: EventRepository = Depends(get_event_repository)
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1),
+    date_from: Optional[datetime] = None,
+    repo: EventRepository = Depends(get_event_repository),
 ):
+    limit = page_size
+    offset = (page - 1) * page_size
+    total_count, events = await repo.get_all(date_from=date_from, limit=limit, offset=offset)
 
-    total_count, events = await repo.get_all(
-        data_from=data_from,
-        limit=limit,
-        offset=offset
-    )
+    base_url = "/api/events"
+    next_page = f"{base_url}?page={page + 1}&page_size={page_size}"
+    if date_from:
+        next_page += f"&date_from={date_from.isoformat()}"
+    prev_page = f"{base_url}?page={page - 1}&page_size={page_size}" if page > 1 else None
+    if date_from and prev_page:
+        prev_page += f"&date_from={date_from.isoformat()}"
 
     return {
         "count": total_count,
-        "next": None,
-        "previous": None,
-        "results": events}
+        "next": next_page if offset + limit < total_count else None,
+        "previous": prev_page,
+        "results": events,
+    }
 
 
 @router.get("/api/events/{event_id}", response_model=EventResponseSchema)
 async def get_event_detail(
-        page: int = Query(1, ge=1),
-        page_size: int = Query(10, ge=1, alias="page_size"),
-        date_from: Optional[datetime] = Query(None, alias="date_from"),
+        event_id: uuid.UUID,
         repo: EventRepository = Depends(get_event_repository)
 ):
-    limit = page_size
-    offset = (page - 1) * page_size
-    total_count, events = await repo.get_all(
-        data_from=date_from,
-        limit=limit,
-        offset=offset
-    )
-    return {
-        "count": total_count,
-        "next": None,
-        "previous": None,
-        "results": events
-    }
+    event = await repo.get_by_id(event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return event
 
 
 @router.get("/api/events/{event_id}/seats", response_model=EventSeatsResponse)
 async def get_seats(
-    event_id: uuid.UUID, client: EventProviderClient = Depends(get_event_client)
+        event_id: uuid.UUID,
+        client: EventProviderClient = Depends(get_event_client)
 ):
-    external_seats = await client.get_event_seats(event_id)
-    return {
-        "event_id": event_id,
-        "available_seats": external_seats
-    }
+    seats = await client.get_event_seats(event_id)
+    return {"event_id": event_id, "available_seats": seats}
+    # external_seats = await client.get_event_seats(event_id)
+    # return {
+    #     "event_id": event_id,
+    #     "available_seats": external_seats
+    # }
+
+
+@router.delete("/api/tickets/{ticket_id}")
+async def cancel_ticket(
+    ticket_id: str,
+    usecase: CancelTicketUsecase = Depends(get_cancel_ticket_usecase),
+):
+    success = await usecase.execute(ticket_id)
+    return {"success": success}

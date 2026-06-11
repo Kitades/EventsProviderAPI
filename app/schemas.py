@@ -1,6 +1,5 @@
 from typing import Optional, List, Dict, Any
-
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 from datetime import datetime
 import uuid
 
@@ -10,7 +9,7 @@ class PlaceSchema(BaseModel):
     name: str
     city: str
     address: str
-    seats_pattern: str | None = None
+    seats_pattern: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -36,9 +35,7 @@ class EventResponseSchema(BaseModel):
                 "event_time": data.event_time,
                 "registration_deadline": data.registration_deadline,
                 "status": data.status,
-                "number_of_visitors": getattr(
-                    data, "number_of_visitors", getattr(data, "visitors_count", 0)
-                ),
+                "number_of_visitors": getattr(data, "number_of_visitors", getattr(data, "visitors_count", 0)),
                 "place": {
                     "id": data.place_id,
                     "name": data.place_name,
@@ -62,14 +59,14 @@ class EventsListResponseSchema(BaseModel):
     results: List[EventResponseSchema]
 
 
-class SeatSchema(BaseModel):
-    id: uuid.UUID
-    row: str
-    number: int
-    price: int = Field(alias="cost")
-    is_available: bool
+class TicketCreateRequest(BaseModel):
+    event_id: uuid.UUID
+    first_name: str
+    last_name: str
+    email: str
+    seat: str
 
 
 class EventSeatsResponse(BaseModel):
     event_id: uuid.UUID
-    available_seats: list[SeatSchema]
+    available_seats: List[str]

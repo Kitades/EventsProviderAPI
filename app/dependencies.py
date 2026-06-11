@@ -35,3 +35,8 @@ def get_ticket_usecase(
 ):
     event_repo = EventRepository(db)
     return CreateTicketUsecase(client, event_repo)
+
+def get_cancel_ticket_usecase(
+    client: EventProviderClient = Depends(get_event_client),
+):
+    return CancelTicketUsecase(client)

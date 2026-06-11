@@ -53,10 +53,10 @@ async def create_ticket(
 
 @router.get("/api/events", response_model=EventsListResponseSchema)
 async def get_events(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1),
-    date_from: Optional[datetime] = None,
-    repo: EventRepository = Depends(get_event_repository),
+        page: int = Query(1, ge=1),
+        page_size: int = Query(20, ge=1),
+        date_from: Optional[datetime] = None,
+        repo: EventRepository = Depends(get_event_repository),
 ):
     limit = page_size
     offset = (page - 1) * page_size
@@ -105,8 +105,8 @@ async def get_seats(
 
 @router.delete("/api/tickets/{ticket_id}")
 async def cancel_ticket(
-    ticket_id: str,
-    usecase: CancelTicketUsecase = Depends(get_cancel_ticket_usecase),
+        ticket_id: str,
+        usecase: CancelTicketUsecase = Depends(get_cancel_ticket_usecase),
 ):
     success = await usecase.execute(ticket_id)
     return {"success": success}

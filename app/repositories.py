@@ -34,10 +34,9 @@ class EventRepository:
         return total_count, list(events)
 
     async def upsert(self, event_data: dict):
-        # Работаем с копией
         data = event_data.copy()
 
-        # Извлекаем вложенный place
+        # Извлекаем place
         place = data.pop("place", None)
         if place and isinstance(place, dict):
             data["place_id"] = uuid.UUID(place.get("id"))
@@ -46,27 +45,28 @@ class EventRepository:
             data["address"] = place.get("address")
             data["seats_pattern"] = place.get("seats_pattern")
 
-        # Преобразуем number_of_visitors -> visitors_count
+        # Преобразуем number_of_visitors
         if "number_of_visitors" in data:
             data["visitors_count"] = data.pop("number_of_visitors")
 
-        # Удаляем поля, которых нет в модели EventsModel
-        # (это наиболее частые поля из внешнего API)
-        for field in ["changed_at", "created_at", "updated_at", "deleted_at", "cursor"]:
+        # Удаляем все поля, которых нет в модели EventsModel
+        # (расширяемый список)
+        extra_fields = [
+            "changed_at", "created_at", "updated_at", "deleted_at",
+            "cursor", "status_changed_at", "modified_at", "published_at"
+        ]
+        for field in extra_fields:
             data.pop(field, None)
 
-        # Проверяем существование события
         event_id = data.get("id")
         if event_id:
             event = await self.get_by_id(event_id)
             if event:
-                # Обновляем существующее
                 for key, value in data.items():
                     setattr(event, key, value)
                 await self.session.commit()
                 return
 
-        # Создаём новое
         new_event = EventsModel(**data)
         self.session.add(new_event)
         await self.session.commit()

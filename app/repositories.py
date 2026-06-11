@@ -45,12 +45,6 @@ class EventRepository:
             data["address"] = place.get("address")
             data["seats_pattern"] = place.get("seats_pattern")
 
-        # Преобразуем number_of_visitors
-        if "number_of_visitors" in data:
-            data["visitors_count"] = data.pop("number_of_visitors")
-
-        # Удаляем все поля, которых нет в модели EventsModel
-        # (расширяемый список)
         extra_fields = [
             "changed_at", "created_at", "updated_at", "deleted_at",
             "cursor", "status_changed_at", "modified_at", "published_at"

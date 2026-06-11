@@ -16,6 +16,7 @@ class EventStatus(enum.Enum):
     published = "published"
     cancelled = "cancelled"
     finished = "finished"
+    registration_closed = "registration_closed"
 
 
 class SyncStatus(enum.Enum):
@@ -44,9 +45,10 @@ class EventsModel(Base):
     number_of_visitors: Mapped[int] = mapped_column(
         "visitors_count", Integer, default=0
     )
-    status: Mapped[EventStatus] = mapped_column(
-        Enum(EventStatus, native_enum=False), default=EventStatus.published
-    )
+    # status: Mapped[EventStatus] = mapped_column(
+    #     Enum(EventStatus, native_enum=False), default=EventStatus.published
+    # )
+    status: Mapped[str] = mapped_column(Text, default="published")
 
 
 class SyncMetadataModel(Base):

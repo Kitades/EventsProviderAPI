@@ -6,7 +6,7 @@ from app.client import EventProviderClient
 from app.config import settings
 from app.database import get_db
 from app.repositories import EventRepository, SyncRepositories
-from app.usecases import SyncEventUsecase, CreateTicketUsecase
+from app.usecases import SyncEventUsecase, CreateTicketUsecase, CancelTicketUsecase
 
 
 def get_event_client():
@@ -36,7 +36,8 @@ def get_ticket_usecase(
     event_repo = EventRepository(db)
     return CreateTicketUsecase(client, event_repo)
 
+
 def get_cancel_ticket_usecase(
-    client: EventProviderClient = Depends(get_event_client),
+        client: EventProviderClient = Depends(get_event_client),
 ):
     return CancelTicketUsecase(client)

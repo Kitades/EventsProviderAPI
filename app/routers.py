@@ -10,7 +10,7 @@ from app.dependencies import (
     get_sync_usecase,
     get_ticket_usecase,
     get_event_repository,
-    get_event_client,
+    get_event_client, get_cancel_ticket_usecase,
 )
 from app.repositories import EventRepository
 from app.schemas import (
@@ -18,7 +18,7 @@ from app.schemas import (
     EventSeatsResponse,
     EventsListResponseSchema, TicketCreateRequest,
 )
-from app.usecases import SyncEventUsecase, CreateTicketUsecase
+from app.usecases import SyncEventUsecase, CreateTicketUsecase, CancelTicketUsecase
 
 router = APIRouter()
 

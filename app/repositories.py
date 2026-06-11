@@ -18,7 +18,7 @@ class EventRepository:
         return result.scalar_one_or_none()
 
     async def get_all(
-            self, date_from: Optional[datetime], limit: int, offset: int
+        self, date_from: Optional[datetime], limit: int, offset: int
     ) -> Tuple[int, list]:
         query = select(EventsModel)
         if date_from:
@@ -34,8 +34,10 @@ class EventRepository:
         return total_count, list(events)
 
     async def upsert(self, event_data: dict):
+        # Работаем с копией
         data = event_data.copy()
 
+        # Извлекаем вложенный place
         place = data.pop("place", None)
         if place and isinstance(place, dict):
             data["place_id"] = uuid.UUID(place.get("id"))
@@ -43,23 +45,28 @@ class EventRepository:
             data["city"] = place.get("city")
             data["address"] = place.get("address")
             data["seats_pattern"] = place.get("seats_pattern")
-        else:
-            pass
 
+        # Преобразуем number_of_visitors -> visitors_count
         if "number_of_visitors" in data:
             data["visitors_count"] = data.pop("number_of_visitors")
 
-        data.pop("changed_at", None)
+        # Удаляем поля, которых нет в модели EventsModel
+        # (это наиболее частые поля из внешнего API)
+        for field in ["changed_at", "created_at", "updated_at", "deleted_at", "cursor"]:
+            data.pop(field, None)
 
+        # Проверяем существование события
         event_id = data.get("id")
         if event_id:
             event = await self.get_by_id(event_id)
             if event:
+                # Обновляем существующее
                 for key, value in data.items():
                     setattr(event, key, value)
                 await self.session.commit()
                 return
 
+        # Создаём новое
         new_event = EventsModel(**data)
         self.session.add(new_event)
         await self.session.commit()

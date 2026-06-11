@@ -19,13 +19,13 @@ class EventRepository:
         return result.scalar_one_or_none()
 
     async def get_all(
-            self, data_from: Optional[datetime], limit: int, offset: int
+            self, date_from: Optional[datetime], limit: int, offset: int
     ) -> Tuple[int, list]:
 
         query = select(EventsModel)
 
-        if data_from:
-            query = query.where(EventsModel.event_time >= data_from)
+        if date_from:
+            query = query.where(EventsModel.event_time >= date_from)
 
         count_query = select(func.count()).select_from(query.subquery())
         count_result = await self.session.execute(count_query)

@@ -17,7 +17,12 @@ class EventsProviderClientProtocol(typing.Protocol):
     async def events(self, cursor) -> typing.Any: ...
 
     async def register(
-            self, event_id: uuid.UUID, first_name: str, last_name: str, email: str, seat: str
+            self,
+            event_id: uuid.UUID,
+            first_name: str,
+            last_name: str,
+            email: str,
+            seat: str
     ) -> str: ...
 
     async def cancel_registration(self, ticket_id: str) -> bool: ...

@@ -36,13 +36,20 @@ class SyncEventUsecase:
 
 class CreateTicketUsecase:
     def __init__(
-        self, client: EventsProviderClientProtocol, event_repo: EventRepositoryProtocol
+        self,
+        client: EventsProviderClientProtocol,
+        event_repo: EventRepositoryProtocol
     ):
         self.client = client
         self.event_repo = event_repo
 
     async def execute(
-        self, event_id: uuid.UUID, first_name: str, last_name: str, seat: str
+        self,
+        event_id: uuid.UUID,
+        first_name: str,
+        last_name: str,
+        email: str,
+        seat: str
     ):
         event = await self.event_repo.get_by_id(event_id)
         if not event:
@@ -55,6 +62,7 @@ class CreateTicketUsecase:
             event_id=event_id,
             first_name=first_name,
             last_name=last_name,
+            email=email,
             seat=seat
         )
         return ticket_id

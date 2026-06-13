@@ -87,6 +87,7 @@ class EventProviderClient:
             response = await client.post(url, json=payload, headers=self.headers)
             print(f"DEBUG: status = {response.status_code}")
             print(f"DEBUG: body = {response.text}")
+
             response.raise_for_status()
             data = response.json()
             return data["ticket_id"]

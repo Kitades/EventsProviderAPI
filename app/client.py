@@ -74,14 +74,19 @@ class EventProviderClient:
     ) -> str:
         url = f"{self.base_url}/api/events/{event_id}/tickets/"
         payload = {
-            # "event_id": str(event_id),
+            "event_id": str(event_id),
             "first_name": first_name,
             "last_name": last_name,
             "email": email,
             "seat": seat,
         }
         async with httpx.AsyncClient() as client:
+            print(f"DEBUG: POST {url}")
+            print(f"DEBUG: headers = {self.headers}")
+            print(f"DEBUG: payload = {payload}")
             response = await client.post(url, json=payload, headers=self.headers)
+            print(f"DEBUG: status = {response.status_code}")
+            print(f"DEBUG: body = {response.text}")
             response.raise_for_status()
             data = response.json()
             return data["ticket_id"]

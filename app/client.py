@@ -1,11 +1,14 @@
+import time
 import uuid
 import httpx
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from app.schemas import ProviderResponse
 
 
 class EventProviderClient:
+    _seats_cache: Dict[str, tuple[float, List[str]]] = {}
+
     def __init__(self, base_url: str, api_key: str):
         self.base_url = base_url
         self.headers = {"x-api-key": api_key}
@@ -29,11 +32,16 @@ class EventProviderClient:
             )
 
     async def get_event_seats(self, event_id: uuid.UUID) -> List[str]:
+        cache_key = str(event_id)
+        now = time.time()
+        if cache_key in self._seats_cache:
+            timestamp, seats = self._seats_cache
+            if now - timestamp < 30:
+                return seats
+
         url = f"{self.base_url}/api/events/{event_id}/seats/"
         async with httpx.AsyncClient() as client:
             response = await client.get(url, headers=self.headers)
-            print(f"DEBUG: {url} -> {response.status_code}")
-            print(f"DEBUG: body: {response.text}")
             if response.status_code == 404:
                 return None
             response.raise_for_status()
@@ -42,7 +50,7 @@ class EventProviderClient:
             if isinstance(data, list):
                 items = data
             elif isinstance(data, dict):
-                items = data.get("seats") or data.get("available_seats") or data.get("result") or []
+                items = data.get("seats") or data.get("available_seats") or data.get("results") or []
             else:
                 items = []
             seats = []
@@ -52,10 +60,17 @@ class EventProviderClient:
                     seats.append(seat_id)
                 else:
                     seats.append(str(item))
-            return []
+
+            self._seats_cache[cache_key] = (now, seats)
+            return seats
 
     async def register(
-        self, event_id: uuid.UUID, first_name: str, last_name: str, email: str, seat: str
+        self,
+        event_id: uuid.UUID,
+        first_name: str,
+        last_name: str,
+        email: str,
+        seat: str
     ) -> str:
         url = f"{self.base_url}/api/tickets/"
         payload = {

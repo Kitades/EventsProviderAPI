@@ -95,9 +95,10 @@ class EventProviderClient:
             return ticket_id
 
     async def cancel_registration(self, ticket_id: str) -> bool:
-        url = f"{self.base_url}/api/tickets/{ticket_id}"
+        url = f"{self.base_url}/api/tickets/{ticket_id}/unregister/"
+        params = {"ticket_id": ticket_id}
         async with httpx.AsyncClient() as client:
-            response = await client.delete(url, headers=self.headers)
+            response = await client.delete(url, params=params, headers=self.headers)
             if response.status_code == 404:
                 print(f"WARNING: DELETE {url} returned 404. Assuming success for test.")
                 return False

@@ -60,7 +60,11 @@ class SyncMetadataModel(Base):
 
 
 class TicketModel(Base):
-    __tablename__ = "tickets"
-    id: Mapped[pk_id]  # это ticket_id
+    __tablename__ = "ticket"
+    id: Mapped[pk_id]
     event_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("event.id"))
+    first_name: Mapped[str]
+    last_name: Mapped[str]
+    email: Mapped[str]
+    seat: Mapped[str]
     created_at: Mapped[timestamp]

@@ -6,6 +6,7 @@ from .protocols import (
     SyncRepositoryProtocol,
 )
 from .client import EventPaginator
+from .repositories import TicketRepository
 
 
 class SyncEventUsecase:
@@ -38,10 +39,12 @@ class CreateTicketUsecase:
     def __init__(
         self,
         client: EventsProviderClientProtocol,
-        event_repo: EventRepositoryProtocol
+        event_repo: EventRepositoryProtocol,
+        ticket_repo: TicketRepository
     ):
         self.client = client
         self.event_repo = event_repo
+        self.ticket_repo = ticket_repo
 
     async def execute(
         self,
@@ -52,25 +55,41 @@ class CreateTicketUsecase:
         seat: str
     ):
         event = await self.event_repo.get_by_id(event_id)
-        if not event:
+        if not event or event.status != "published":
             raise Exception("Cобытие не найдено")
 
         if event.status != "published":
             raise Exception("Регистрация не возможна: Событие не опубликованно")
 
         ticket_id = await self.client.register(
-            event_id=event_id,
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            seat=seat
+            event_id,
+            first_name,
+            last_name,
+            email,
+            seat
+        )
+        await self.ticket_repo.create(
+            uuid.UUID(ticket_id),
+            event_id,
+            first_name,
+            last_name,
+            email,
+            seat
         )
         return ticket_id
 
 
 class CancelTicketUsecase:
-    def __init__(self, client: EventsProviderClientProtocol):
+    def __init__(self, client: EventsProviderClientProtocol, ticket_repo: TicketRepository):
         self.client = client
+        self.ticket_repo = ticket_repo
 
     async def execute(self, ticket_id: str) -> bool:
-        return await self.client.cancel_registration(ticket_id)
+        ticket = await self.ticket_repo.get(uuid.UUID(ticket_id))
+        if not ticket:
+            return False
+        success = await self.client.cancel_registration(ticket.event_id, ticket_id)
+        if success:
+            await self.session.delete(ticket)
+            await self.session.commit()
+        return success

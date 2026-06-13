@@ -5,7 +5,7 @@ from typing import Tuple, Optional
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import EventsModel, SyncMetadataModel, SyncStatus
+from app.models import EventsModel, SyncMetadataModel, SyncStatus, TicketModel
 
 
 class EventRepository:
@@ -111,3 +111,25 @@ class SyncRepositories:
         if not meta or not meta.last_changed_at:
             return None
         return meta.last_changed_at.strftime("%Y-%m-%d")
+
+
+class TicketRepository:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(self, ticket_id: uuid.UUID, event_id: uuid.UUID, first_name: str, last_name: str, email: str, seat: str):
+        ticket = TicketModel(
+            id=ticket_id,
+            event_id=event_id,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            seat=seat
+        )
+        self.session.add(ticket)
+        await self.session.commit()
+        return ticket
+
+    async def get(self, ticket_id: uuid.UUID):
+        result = await self.session.execute(select(TicketModel).where(TicketModel.id == ticket_id))
+        return result.scalar_one_or_none()

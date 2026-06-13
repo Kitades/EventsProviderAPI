@@ -33,8 +33,9 @@ class EventProviderClient:
         async with httpx.AsyncClient() as client:
             response = await client.get(url, headers=self.headers)
             response.raise_for_status()
+            if response.status_code == 404:
+                return None
             data = response.json()
-            # Внешний API возвращает список мест в виде объектов или строк
             if isinstance(data, list):
                 seats = []
                 for seat in data:

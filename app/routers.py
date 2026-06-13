@@ -85,7 +85,7 @@ async def get_event_detail(
 ):
     event = await repo.get_by_id(event_id)
     if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+        raise HTTPException(status_code=404, detail="бывает просто не нашли")
     return event
 
 
@@ -95,12 +95,9 @@ async def get_seats(
         client: EventProviderClient = Depends(get_event_client)
 ):
     seats = await client.get_event_seats(event_id)
+    if seats is None :
+        raise HTTPException(status_code=404, detail="бывает просто не нашли")
     return {"event_id": event_id, "available_seats": seats}
-    # external_seats = await client.get_event_seats(event_id)
-    # return {
-    #     "event_id": event_id,
-    #     "available_seats": external_seats
-    # }
 
 
 @router.delete("/api/tickets/{ticket_id}")

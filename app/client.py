@@ -32,9 +32,10 @@ class EventProviderClient:
         url = f"{self.base_url}/api/events/{event_id}/seats/"
         async with httpx.AsyncClient() as client:
             response = await client.get(url, headers=self.headers)
-            response.raise_for_status()
             if response.status_code == 404:
                 return None
+            response.raise_for_status()
+
             data = response.json()
             if isinstance(data, list):
                 seats = []

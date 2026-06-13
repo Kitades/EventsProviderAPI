@@ -95,7 +95,7 @@ async def get_seats(
         client: EventProviderClient = Depends(get_event_client)
 ):
     seats = await client.get_event_seats(event_id)
-    if seats is None :
+    if seats is None:
         raise HTTPException(status_code=404, detail="бывает просто не нашли")
     return {"event_id": event_id, "available_seats": seats}
 

@@ -100,7 +100,7 @@ class EventProviderClient:
             response = await client.delete(url, headers=self.headers)
             if response.status_code == 404:
                 print(f"WARNING: DELETE {url} returned 404. Assuming success for test.")
-                return True
+                return False
             response.raise_for_status()
             return True
 

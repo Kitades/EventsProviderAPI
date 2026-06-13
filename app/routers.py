@@ -2,8 +2,10 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-import fastapi
+from fastapi import Request, status
 from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from app.client import EventProviderClient
 from app.dependencies import (
@@ -106,4 +108,14 @@ async def cancel_ticket(
         usecase: CancelTicketUsecase = Depends(get_cancel_ticket_usecase),
 ):
     success = await usecase.execute(ticket_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Ticket not found")
     return {"success": success}
+
+
+@router.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": exc.errors()}
+    )

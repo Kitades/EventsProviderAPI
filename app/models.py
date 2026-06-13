@@ -2,7 +2,7 @@ from datetime import datetime
 import enum
 import uuid
 from typing import Annotated
-from sqlalchemy import Text, Enum, DateTime, func, Integer
+from sqlalchemy import Text, Enum, DateTime, func, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 
 
@@ -57,3 +57,10 @@ class SyncMetadataModel(Base):
     last_sync_time: Mapped[timestamp]
     last_changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     status: Mapped[SyncStatus] = mapped_column(Enum(SyncStatus, native_enum=False))
+
+
+class TicketModel(Base):
+    __tablename__ = "tickets"
+    id: Mapped[pk_id]  # это ticket_id
+    event_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("event.id"))
+    created_at: Mapped[timestamp]

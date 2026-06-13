@@ -72,7 +72,7 @@ class EventProviderClient:
         email: str,
         seat: str
     ) -> str:
-        url = f"{self.base_url}/api/events/{event_id}/tickets/"
+        url = f"{self.base_url}/api/events/{event_id}/register/"
         payload = {
             # "event_id": str(event_id),
             "first_name": first_name,

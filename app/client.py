@@ -32,19 +32,26 @@ class EventProviderClient:
         url = f"{self.base_url}/api/events/{event_id}/seats/"
         async with httpx.AsyncClient() as client:
             response = await client.get(url, headers=self.headers)
+            print(f"DEBUG: {url} -> {response.status_code}")
+            print(f"DEBUG: body: {response.text}")
             if response.status_code == 404:
                 return None
             response.raise_for_status()
-
             data = response.json()
+
             if isinstance(data, list):
-                seats = []
-                for seat in data:
-                    if isinstance(seat, dict):
-                        seats.append(seat.get("id") or seat.get("seat") or str(seat))
-                    else:
-                        seats.append(str(seat))
-                return seats
+                items = data
+            elif isinstance(data, dict):
+                items = data.get("seats") or data.get("available_seats") or data.get("result") or []
+            else:
+                items = []
+            seats = []
+            for item in items:
+                if isinstance(item, dict):
+                    seat_id = item.get("id") or item.get("seat") or str(item)
+                    seats.append(seat_id)
+                else:
+                    seats.append(str(item))
             return []
 
     async def register(

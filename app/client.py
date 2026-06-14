@@ -95,7 +95,8 @@ class EventProviderClient:
             return ticket_id
 
     async def cancel_registration(self, event_id: uuid.UUID, ticket_id: str) -> bool:
-        url = f"{self.base_url}/api/events/{event_id}/unregister/{ticket_id}/"
+        # url = f"{self.base_url}/api/events/{event_id}/unregister/{ticket_id}/"
+        url = f"{self.base_url}/api/tickets/{ticket_id}"
         # params = {"ticket_id": ticket_id}
         async with httpx.AsyncClient() as client:
             response = await client.delete(url, headers=self.headers)

@@ -95,7 +95,7 @@ class EventProviderClient:
             return ticket_id
 
     async def cancel_registration(self, event_id: uuid.UUID, ticket_id: str) -> bool:
-        url = f"{self.base_url}/api/events/{event_id}/unregister/{ticket_id}/"
+        url = f"{self.base_url}/api/tickets/{ticket_id}/"
         async with httpx.AsyncClient() as client:
             response = await client.delete(url, headers=self.headers)
             print(f"DEBUG UNREGISTER: {url} -> {response.status_code}, body={response.text}")
@@ -103,7 +103,21 @@ class EventProviderClient:
                 return True
             if response.status_code == 404:
                 return False
-            response.raise_for_status()
+            # response.raise_for_status()
+            # return False
+
+            if response.status_code in (400, 405):
+                url2 = f"{self.base_url}/api/events/{event_id}/unregister/"
+                params = {"ticket_id": ticket_id}
+                response2 = await client.post(url2, params=params, headers=self.headers)
+                print(f"DEBUG CANCEL FALLBACK: {url2} -> {response2.status_code}, body={response2.text}")
+                if response2.status_code == 200:
+                    return True
+                if response2.status_code == 404:
+                    return False
+                response2.raise_for_status()
+            else:
+                response.raise_for_status()
             return False
 
 

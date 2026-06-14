@@ -14,7 +14,7 @@ class EventProviderClient:
         self.headers = {"x-api-key": api_key}
 
     async def get_events(
-        self, url: Optional[str] = None, changed_at: Optional[str] = None
+            self, url: Optional[str] = None, changed_at: Optional[str] = None
     ) -> ProviderResponse:
         if url is None:
             url = f"{self.base_url}/api/events/"
@@ -65,12 +65,12 @@ class EventProviderClient:
             return seats
 
     async def register(
-        self,
-        event_id: uuid.UUID,
-        first_name: str,
-        last_name: str,
-        email: str,
-        seat: str
+            self,
+            event_id: uuid.UUID,
+            first_name: str,
+            last_name: str,
+            email: str,
+            seat: str
     ) -> str:
         url = f"{self.base_url}/api/events/{event_id}/register/"
         payload = {
@@ -95,27 +95,17 @@ class EventProviderClient:
             return ticket_id
 
     async def cancel_registration(self, event_id: uuid.UUID, ticket_id: str) -> bool:
-        url = f"{self.base_url}/api/events/{event_id}/unregister/"
-        params = {"ticket_id": ticket_id}
-
+        url = f"{self.base_url}/api/events/{event_id}/unregister/{ticket_id}/"
         async with httpx.AsyncClient() as client:
-            response = await client.delete(url, params=params, headers=self.headers)
-            print(f"DEBUG UNREGISTER DELETE JSON: status={response.status_code}, body={response.text}")
-
+            response = await client.delete(url, headers=self.headers)
+            print(f"DEBUG UNREGISTER: {url} -> {response.status_code}, body={response.text}")
             if response.status_code == 200:
                 return True
             if response.status_code == 404:
                 return False
-            if response.status_code == 405:
-                response = await client.post(url, params=params, headers=self.headers)
-                print(f"DEBUG UNREGISTER POST JSON: status={response.status_code}, body={response.text}")
-                if response.status_code == 200:
-                    return True
-                if response.status_code == 404:
-                    return False
-
             response.raise_for_status()
-            return True
+            return False
+
 
 class EventPaginator:
     def __init__(self, client: EventProviderClient, start_cursor: str):

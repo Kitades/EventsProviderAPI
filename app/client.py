@@ -101,8 +101,8 @@ class EventProviderClient:
         async with httpx.AsyncClient() as client:
             response = await client.delete(url, headers=self.headers)
 
-            if response.status_code == 400:
-                print(f"DEBUG: {url} returned 400")
+            if response.status_code != 404:
+                print(f"DEBUG: {url} returned {response.status_code}")
                 print(f"DEBUG: Response body: {response.text}")
             if response.status_code == 404:
                 return False

@@ -98,7 +98,7 @@ class EventProviderClient:
         url = f"{self.base_url}/api/events/{event_id}/register/"
         params = {"ticket_id": ticket_id}
         async with httpx.AsyncClient() as client:
-            response = await client.delete(url, params=params, headers=self.headers)
+            response = await client.post(url, params=params, headers=self.headers)
 
             if response.status_code == 400:
                 print(f"DEBUG DELETE {url} -> 400, body: {response.text}")

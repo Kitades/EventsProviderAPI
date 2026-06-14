@@ -35,7 +35,9 @@ class EventResponseSchema(BaseModel):
                 "event_time": data.event_time,
                 "registration_deadline": data.registration_deadline,
                 "status": data.status,
-                "number_of_visitors": getattr(data, "number_of_visitors", getattr(data, "visitors_count", 0)),
+                "number_of_visitors": getattr(
+                    data, "number_of_visitors", getattr(data, "visitors_count", 0)
+                ),
                 "place": {
                     "id": data.place_id,
                     "name": data.place_name,

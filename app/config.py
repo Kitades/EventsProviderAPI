@@ -7,7 +7,7 @@ class WebAppSettings(BaseSettings):
     api_key: str = Field(default="secret", alias="API_KEY")
     provider_url: str = Field(
         default="http://student-system-events-provider-web.student-system-events-provider.svc:8000",
-        alias="PROVIDER_URL"
+        alias="PROVIDER_URL",
     )
 
     model_config = SettingsConfigDict(

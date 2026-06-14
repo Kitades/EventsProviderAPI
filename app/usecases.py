@@ -40,7 +40,7 @@ class CreateTicketUsecase:
         self,
         client: EventsProviderClientProtocol,
         event_repo: EventRepositoryProtocol,
-        ticket_repo: TicketRepository
+        ticket_repo: TicketRepository,
     ):
         self.client = client
         self.event_repo = event_repo
@@ -52,32 +52,25 @@ class CreateTicketUsecase:
         first_name: str,
         last_name: str,
         email: str,
-        seat: str
+        seat: str,
     ):
         event = await self.event_repo.get_by_id(event_id)
         if not event or event.status != "published":
             raise Exception("Cобытие не найдено")
 
         ticket_id = await self.client.register(
-            event_id,
-            first_name,
-            last_name,
-            email,
-            seat
+            event_id, first_name, last_name, email, seat
         )
         await self.ticket_repo.create(
-            uuid.UUID(ticket_id),
-            event_id,
-            first_name,
-            last_name,
-            email,
-            seat
+            uuid.UUID(ticket_id), event_id, first_name, last_name, email, seat
         )
         return ticket_id
 
 
 class CancelTicketUsecase:
-    def __init__(self, client: EventsProviderClientProtocol, ticket_repo: TicketRepository):
+    def __init__(
+        self, client: EventsProviderClientProtocol, ticket_repo: TicketRepository
+    ):
         self.client = client
         self.ticket_repo = ticket_repo
 

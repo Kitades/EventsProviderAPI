@@ -11,8 +11,7 @@ from app.usecases import SyncEventUsecase, CreateTicketUsecase, CancelTicketUsec
 
 def get_event_client():
     return EventProviderClient(
-        base_url=settings.get_provider_url(),
-        api_key=settings.get_return_api_key()
+        base_url=settings.get_provider_url(), api_key=settings.get_return_api_key()
     )
 
 
@@ -21,17 +20,17 @@ def get_event_repository(db: AsyncSession = Depends(get_db)):
 
 
 def get_sync_usecase(
-        event_repo: EventRepository = Depends(get_event_repository),
-        db: AsyncSession = Depends(get_db),
-        client: EventProviderClient = Depends(get_event_client),
+    event_repo: EventRepository = Depends(get_event_repository),
+    db: AsyncSession = Depends(get_db),
+    client: EventProviderClient = Depends(get_event_client),
 ):
     sync_repo = SyncRepositories(db)
     return SyncEventUsecase(client, event_repo, sync_repo)
 
 
 def get_ticket_usecase(
-        db: AsyncSession = Depends(get_db),
-        client: EventProviderClient = Depends(get_event_client),
+    db: AsyncSession = Depends(get_db),
+    client: EventProviderClient = Depends(get_event_client),
 ):
     event_repo = EventRepository(db)
     ticket_repo = TicketRepository(db)
@@ -39,8 +38,8 @@ def get_ticket_usecase(
 
 
 def get_cancel_ticket_usecase(
-        db: AsyncSession = Depends(get_db),
-        client: EventProviderClient = Depends(get_event_client),
+    db: AsyncSession = Depends(get_db),
+    client: EventProviderClient = Depends(get_event_client),
 ):
     ticket_repo = TicketRepository(db)
     return CancelTicketUsecase(client, ticket_repo)

@@ -4,8 +4,6 @@ from app.routers import router
 from app.database import engine
 from app.models import Base
 import asyncio
-from app.usecases import SyncEventUsecase
-from app.dependencies import get_sync_usecase
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette import status

@@ -46,14 +46,20 @@ class EventRepository:
 
         for field in ["event_time", "registration_deadline"]:
             if field in data and isinstance(data[field], str):
-                data[field] = datetime.fromisoformat(data[field].replace('Z', '+00:00'))
+                data[field] = datetime.fromisoformat(data[field].replace("Z", "+00:00"))
 
         extra_fields = [
-            "changed_at", "created_at", "updated_at", "deleted_at",
-            "cursor", "status_changed_at", "modified_at", "published_at"
+            "changed_at",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+            "cursor",
+            "status_changed_at",
+            "modified_at",
+            "published_at",
         ]
-        if 'status' in data:
-            data['status'] = data['status'][:9]
+        if "status" in data:
+            data["status"] = data["status"][:9]
         for field in extra_fields:
             data.pop(field, None)
 
@@ -82,9 +88,13 @@ class SyncRepositories:
     async def update_sync_info(self, last_changed_at: datetime, status: str):
         if isinstance(last_changed_at, str):
             try:
-                last_changed_at = datetime.fromisoformat(last_changed_at.replace("Z", "+00:00"))
+                last_changed_at = datetime.fromisoformat(
+                    last_changed_at.replace("Z", "+00:00")
+                )
             except ValueError:
-                last_changed_at = datetime.strptime(last_changed_at, "%Y-%m-%d").replace(tzinfo=UTC)
+                last_changed_at = datetime.strptime(
+                    last_changed_at, "%Y-%m-%d"
+                ).replace(tzinfo=UTC)
 
         if not self.session.is_active:
             await self.session.rollback()
@@ -92,7 +102,7 @@ class SyncRepositories:
         sync_log = SyncMetadataModel(
             last_sync_time=datetime.now(UTC),
             last_changed_at=last_changed_at,
-            status=SyncStatus.success if status == "success" else SyncStatus.error
+            status=SyncStatus.success if status == "success" else SyncStatus.error,
         )
         self.session.add(sync_log)
         await self.session.commit()
@@ -117,23 +127,35 @@ class TicketRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, ticket_id: uuid.UUID, event_id: uuid.UUID, first_name: str, last_name: str, email: str, seat: str):
+    async def create(
+        self,
+        ticket_id: uuid.UUID,
+        event_id: uuid.UUID,
+        first_name: str,
+        last_name: str,
+        email: str,
+        seat: str,
+    ):
         ticket = TicketModel(
             id=ticket_id,
             event_id=event_id,
             first_name=first_name,
             last_name=last_name,
             email=email,
-            seat=seat
+            seat=seat,
         )
         self.session.add(ticket)
         await self.session.commit()
         return ticket
 
     async def get(self, ticket_id: uuid.UUID):
-        result = await self.session.execute(select(TicketModel).where(TicketModel.id == ticket_id))
+        result = await self.session.execute(
+            select(TicketModel).where(TicketModel.id == ticket_id)
+        )
         return result.scalar_one_or_none()
 
     async def delete(self, ticket_id: uuid.UUID):
-        await self.session.execute(delete(TicketModel).where(TicketModel.id == ticket_id))
+        await self.session.execute(
+            delete(TicketModel).where(TicketModel.id == ticket_id)
+        )
         await self.session.commit()

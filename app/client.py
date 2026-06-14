@@ -98,7 +98,6 @@ class EventProviderClient:
         base_url = self.base_url
         headers = self.headers
 
-        # Список вариантов: (метод, URL, параметры/тело)
         variants = [
             ("DELETE", f"{base_url}/api/events/{event_id}/unregister/", {"ticket_id": ticket_id}),
             ("DELETE", f"{base_url}/api/events/{event_id}/unregister/", None, {"ticket_id": ticket_id}),  # query param
@@ -124,7 +123,7 @@ class EventProviderClient:
                     else:  # POST
                         response = await client.post(url, json=json_payload, headers=headers)
 
-                    print(f"🔍 TRY: {method} {url} | params={params} | json={json_payload}")
+                    print(f"  TRY: {method} {url} | params={params} | json={json_payload}")
                     print(f"   -> {response.status_code} {response.text[:200]}")
                     if response.status_code == 200:
                         print("✅ Успешная отмена!")

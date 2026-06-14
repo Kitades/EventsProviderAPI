@@ -95,45 +95,17 @@ class EventProviderClient:
             return ticket_id
 
     async def cancel_registration(self, event_id: uuid.UUID, ticket_id: str) -> bool:
-        base_url = self.base_url
-        headers = self.headers
-
-        variants = [
-            ("DELETE", f"{base_url}/api/events/{event_id}/unregister/", {"ticket_id": ticket_id}),
-            ("DELETE", f"{base_url}/api/events/{event_id}/unregister/", None, {"ticket_id": ticket_id}),  # query param
-            ("POST", f"{base_url}/api/events/{event_id}/unregister/", {"ticket_id": ticket_id}),
-            ("DELETE", f"{base_url}/api/tickets/{ticket_id}", None),
-            ("DELETE", f"{base_url}/api/events/{event_id}/unregister/{ticket_id}/", None),
-            ("POST", f"{base_url}/api/events/{event_id}/register/", {"ticket_id": ticket_id, "action": "cancel"}),
-            ("DELETE", f"{base_url}/api/events/{event_id}/register/", {"ticket_id": ticket_id}),
-        ]
-
+        url = f"{self.base_url}/api/events/{event_id}/unregister/"
+        payload = {"ticket_id": ticket_id}
         async with httpx.AsyncClient() as client:
-            for method, url, json_payload, *query in variants:
-                params = query[0] if query else None
-                try:
-                    if method == "DELETE":
-                        if json_payload:
-                            # DELETE с JSON в теле
-                            response = await client.delete(url, json=json_payload, headers=headers)
-                        elif params:
-                            response = await client.delete(url, params=params, headers=headers)
-                        else:
-                            response = await client.delete(url, headers=headers)
-                    else:  # POST
-                        response = await client.post(url, json=json_payload, headers=headers)
-
-                    print(f"  TRY: {method} {url} | params={params} | json={json_payload}")
-                    print(f"   -> {response.status_code} {response.text[:200]}")
-                    if response.status_code == 200:
-                        print("✅ Успешная отмена!")
-                        return True
-                    if response.status_code == 404:
-                        continue
-                except Exception as e:
-                    print(f"   -> ошибка: {e}")
-                    continue
-
+            # Используем request, чтобы передать json в DELETE
+            response = await client.request("DELETE", url, json=payload, headers=self.headers)
+            print(f"🔍 CANCEL: {url} -> {response.status_code}, body={response.text}")
+            if response.status_code == 200:
+                return True
+            if response.status_code == 404:
+                return False
+            response.raise_for_status()
             return False
 
 

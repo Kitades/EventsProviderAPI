@@ -98,7 +98,11 @@ class EventProviderClient:
         url = f"{self.base_url}/api/events/{event_id}/register/"
         payload = {"ticket_id": ticket_id, "action": "cancel"}
         async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=payload, headers=self.headers)
+            # Сначала пробуем DELETE
+            response = await client.delete(url, json=payload, headers=self.headers)
+            if response.status_code == 405:
+                # Если метод не разрешён, пробуем POST
+                response = await client.post(url, json=payload, headers=self.headers)
             print(f"DEBUG CANCEL: {url} -> {response.status_code}, body={response.text}")
             if response.status_code == 200:
                 return True

@@ -94,13 +94,12 @@ class EventProviderClient:
                 raise ValueError("No ticket_id in response")
             return ticket_id
 
-    async def cancel_registration(self, ticket_id: str) -> bool:
-        url = f"{self.base_url}/api/tickets/{ticket_id}/unregister/"
+    async def cancel_registration(self, event_id: uuid.UUID, ticket_id: str) -> bool:
+        url = f"{self.base_url}/api/events/{event_id}/unregister/"
         params = {"ticket_id": ticket_id}
         async with httpx.AsyncClient() as client:
             response = await client.delete(url, params=params, headers=self.headers)
             if response.status_code == 404:
-                print(f"WARNING: DELETE {url} returned 404. Assuming success for test.")
                 return False
             response.raise_for_status()
             return True

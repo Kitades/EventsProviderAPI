@@ -6,30 +6,9 @@ from app.models import Base
 import asyncio
 from app.usecases import SyncEventUsecase
 from app.dependencies import get_sync_usecase
-
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette import status
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    try:
-        yield
-    finally:
-        pass
-
-
-app = FastAPI(title="Events Aggregator", lifespan=lifespan)
-
-
-async def periodic_sync():
-    while True:
-        await asyncio.sleep(86400)
-        usecase = get_sync_usecase(...)  # нужна зависимость
-        await usecase.execute()
 
 
 @asynccontextmanager
@@ -40,6 +19,27 @@ async def lifespan(app: FastAPI):
     task = asyncio.create_task(periodic_sync())
     yield
     task.cancel()
+    await task
+
+
+app = FastAPI(title="Events Aggregator", lifespan=lifespan)
+
+
+async def periodic_sync():
+    """Фоновая синхронизация раз в 24 часа"""
+    while True:
+        await asyncio.sleep(86400)
+        try:
+            # from app.database import AsyncSessionLocal
+            # async with AsyncSessionLocal() as db:
+            #     event_repo = EventRepository(db)
+            #     sync_repo = SyncRepositories(db)
+            #     client = get_event_client()
+            #     usecase = SyncEventUsecase(client, event_repo, sync_repo)
+            #     await usecase.execute()
+            pass
+        except Exception as e:
+            print(f"Periodic sync error: {e}")
 
 
 @app.exception_handler(RequestValidationError)

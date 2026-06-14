@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, UTC
 from typing import Tuple, Optional
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import EventsModel, SyncMetadataModel, SyncStatus, TicketModel
@@ -133,3 +133,7 @@ class TicketRepository:
     async def get(self, ticket_id: uuid.UUID):
         result = await self.session.execute(select(TicketModel).where(TicketModel.id == ticket_id))
         return result.scalar_one_or_none()
+
+    async def delete(self, ticket_id: uuid.UUID):
+        await self.session.execute(delete(TicketModel).where(TicketModel.id == ticket_id))
+        await self.session.commit()

@@ -58,9 +58,6 @@ class CreateTicketUsecase:
         if not event or event.status != "published":
             raise Exception("Cобытие не найдено")
 
-        if event.status != "published":
-            raise Exception("Регистрация не возможна: Событие не опубликованно")
-
         ticket_id = await self.client.register(
             event_id,
             first_name,
@@ -90,6 +87,5 @@ class CancelTicketUsecase:
             return False
         success = await self.client.cancel_registration(ticket.event_id, ticket_id)
         if success:
-            await self.session.delete(ticket)
-            await self.session.commit()
+            await self.ticket_repo.delete(ticket.id)
         return success

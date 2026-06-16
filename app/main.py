@@ -24,17 +24,9 @@ app = FastAPI(title="Events Aggregator", lifespan=lifespan)
 
 
 async def periodic_sync():
-    """Фоновая синхронизация раз в 24 часа"""
     while True:
         await asyncio.sleep(86400)
         try:
-            # from app.database import AsyncSessionLocal
-            # async with AsyncSessionLocal() as db:
-            #     event_repo = EventRepository(db)
-            #     sync_repo = SyncRepositories(db)
-            #     client = get_event_client()
-            #     usecase = SyncEventUsecase(client, event_repo, sync_repo)
-            #     await usecase.execute()
             pass
         except Exception as e:
             print(f"Periodic sync error: {e}")

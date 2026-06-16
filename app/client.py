@@ -2,7 +2,7 @@ import time
 import uuid
 import httpx
 from typing import Optional, List, Dict
-
+from urllib.parse import urljoin
 from app.schemas import ProviderResponse
 
 
@@ -10,14 +10,16 @@ class EventProviderClient:
     _seats_cache: Dict[str, tuple[float, List[str]]] = {}
 
     def __init__(self, base_url: str, api_key: str):
-        self.base_url = base_url
+        self.base_url = base_url.rstrip('/')
         self.headers = {"x-api-key": api_key}
 
     async def get_events(
-        self, url: Optional[str] = None, changed_at: Optional[str] = None
+        self,
+        url: Optional[str] = None,
+        changed_at: Optional[str] = None
     ) -> ProviderResponse:
         if url is None:
-            url = f"{self.base_url}/api/events/"
+            url = urljoin(self.base_url, "/api/events/")
             params = {"changed_at": changed_at} if changed_at else None
         else:
             params = None
@@ -38,7 +40,7 @@ class EventProviderClient:
             if now - timestamp < 30:
                 return seats
 
-        url = f"{self.base_url}/api/events/{event_id}/seats/"
+        url = urljoin(self.base_url, f"/api/events/{event_id}/seats/")
         async with httpx.AsyncClient() as client:
             response = await client.get(url, headers=self.headers)
             if response.status_code == 404:
@@ -81,21 +83,15 @@ class EventProviderClient:
         email: str,
         seat: str,
     ) -> str:
-        url = f"{self.base_url}/api/events/{event_id}/register/"
+        url = urljoin(self.base_url, f"/api/events/{event_id}/register/")
         payload = {
-            # "event_id": str(event_id),
             "first_name": first_name,
             "last_name": last_name,
             "email": email,
             "seat": seat,
         }
         async with httpx.AsyncClient() as client:
-            print(f"DEBUG REGISTER: {url}")
-            print(f"DEBUG HEADERS: {self.headers}")
-            print(f"DEBUG PAYLOAD: {payload}")
             response = await client.post(url, json=payload, headers=self.headers)
-            print(f"DEBUG STATUS: {response.status_code}")
-            print(f"DEBUG BODY: {response.text}")
             response.raise_for_status()
             data = response.json()
             ticket_id = data.get("ticket_id") or data.get("id")
@@ -104,13 +100,12 @@ class EventProviderClient:
             return ticket_id
 
     async def cancel_registration(self, event_id: uuid.UUID, ticket_id: str) -> bool:
-        url = f"{self.base_url}/api/events/{event_id}/unregister/"
+        url = urljoin(self.base_url, f"/api/events/{event_id}/unregister/")
         payload = {"ticket_id": ticket_id}
         async with httpx.AsyncClient() as client:
             response = await client.request(
                 "DELETE", url, json=payload, headers=self.headers
             )
-            print(f"CANCEL: {url} -> {response.status_code}, body={response.text}")
             if response.status_code == 200:
                 return True
             if response.status_code == 404:

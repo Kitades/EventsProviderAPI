@@ -10,7 +10,7 @@ from app.dependencies import (
     get_ticket_usecase,
     get_event_repository,
     get_event_client,
-    get_cancel_ticket_usecase,
+    get_cancel_ticket_usecase, get_get_events_usecase, get_get_event_detail_usecase, get_get_seats_usecase,
 )
 from app.repositories import EventRepository
 from app.schemas import (
@@ -19,7 +19,8 @@ from app.schemas import (
     EventsListResponseSchema,
     TicketCreateRequest,
 )
-from app.usecases import SyncEventUsecase, CreateTicketUsecase, CancelTicketUsecase
+from app.usecases import SyncEventUsecase, CreateTicketUsecase, CancelTicketUsecase, GetEventsUsecase, \
+    GetEventDetailUsecase, GetSeatsUsecase
 
 router = APIRouter()
 
@@ -57,49 +58,31 @@ async def get_events(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1),
     date_from: Optional[datetime] = None,
-    repo: EventRepository = Depends(get_event_repository),
+    usecase: GetEventsUsecase = Depends(get_get_events_usecase)
 ):
-    limit = page_size
-    offset = (page - 1) * page_size
-    total_count, events = await repo.get_all(
-        date_from=date_from, limit=limit, offset=offset
-    )
-
-    base_url = "/api/events"
-    next_page = f"{base_url}?page={page + 1}&page_size={page_size}"
-    if date_from:
-        next_page += f"&date_from={date_from.isoformat()}"
-    prev_page = (
-        f"{base_url}?page={page - 1}&page_size={page_size}" if page > 1 else None
-    )
-    if date_from and prev_page:
-        prev_page += f"&date_from={date_from.isoformat()}"
-
-    return {
-        "count": total_count,
-        "next": next_page if offset + limit < total_count else None,
-        "previous": prev_page,
-        "results": events,
-    }
+    result = await usecase.execute(page, page_size, date_from)
+    return result
 
 
 @router.get("/api/events/{event_id}", response_model=EventResponseSchema)
 async def get_event_detail(
-    event_id: uuid.UUID, repo: EventRepository = Depends(get_event_repository)
+    event_id: uuid.UUID,
+    usecase: GetEventDetailUsecase = Depends(get_get_event_detail_usecase)
 ):
-    event = await repo.get_by_id(event_id)
+    event = await usecase.execute(event_id)
     if not event:
-        raise HTTPException(status_code=404, detail="бывает просто не нашли")
+        raise HTTPException(status_code=404, detail="Event not found")
     return event
 
 
 @router.get("/api/events/{event_id}/seats", response_model=EventSeatsResponse)
 async def get_seats(
-    event_id: uuid.UUID, client: EventProviderClient = Depends(get_event_client)
+    event_id: uuid.UUID,
+    usecase: GetSeatsUsecase = Depends(get_get_seats_usecase)
 ):
-    seats = await client.get_event_seats(event_id)
+    seats = await usecase.execute(event_id)
     if seats is None:
-        raise HTTPException(status_code=404, detail="бывает просто не нашли")
+        raise HTTPException(status_code=404, detail="Event not found")
     return {"event_id": event_id, "available_seats": seats}
 
 

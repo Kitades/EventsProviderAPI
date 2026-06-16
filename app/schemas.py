@@ -3,6 +3,8 @@ from pydantic import BaseModel, ConfigDict, model_validator
 from datetime import datetime
 import uuid
 
+from app.models import EventStatus
+
 
 class PlaceSchema(BaseModel):
     id: uuid.UUID
@@ -20,7 +22,7 @@ class EventResponseSchema(BaseModel):
     event_time: datetime
     registration_deadline: datetime
     number_of_visitors: int
-    status: str
+    status: EventStatus
     place: PlaceSchema
 
     model_config = ConfigDict(from_attributes=True)

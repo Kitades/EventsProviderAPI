@@ -4,19 +4,41 @@ from app.client import EventProviderClient
 
 
 @pytest.mark.asyncio
-async def test_client_get_events_success():
-    # Мокаем AsyncClient внутри httpx
-    with patch("httpx.AsyncClient.get") as mock_get:
-        # Настраиваем фейковый ответ от сервера
-        mock_get.return_value = AsyncMock(
-            status_code=200,
-            json=lambda: {"results": [{"id": "ev-1"}], "next": "cursor-2"},
+async def test_get_events_with_changed_at():
+    client = EventProviderClient(base_url="https://api.example.com", api_key="test")
+    with patch("httpx.AsyncClient") as mock_httpx:
+        mock_response = AsyncMock()
+        mock_response.json.return_value = {"results": [], "next": None}
+        mock_response.raise_for_status = AsyncMock()
+        mock_httpx.return_value.__aenter__.return_value.get = AsyncMock(
+            return_value=mock_response
         )
 
-        client = EventProviderClient(base_url="http://api.test", api_key="token")
-        response = await client.get_events(cursor="cursor-1")
+        response = await client.get_events(url=None, changed_at="2020-01-01")
+        assert response.results == []
+        assert response.next_cursor is None
+        mock_httpx.return_value.__aenter__.return_value.get.assert_awaited_with(
+            "https://api.example.com/api/events/",
+            params={"changed_at": "2020-01-01"},
+            headers={"x-api-key": "test"}
+        )
 
-        # Проверяем, что запрос ушел на правильный URL
-        assert response.items[0]["id"] == "ev-1"
-        assert response.next_cursor == "cursor-2"
-        mock_get.assert_called_once()
+
+@pytest.mark.asyncio
+async def test_get_events_with_url():
+    client = EventProviderClient(base_url="https://api.example.com", api_key="test")
+    with patch("httpx.AsyncClient") as mock_httpx:
+        mock_response = AsyncMock()
+        mock_response.json.return_value = {"results": [], "next": None}
+        mock_response.raise_for_status = AsyncMock()
+        mock_httpx.return_value.__aenter__.return_value.get = AsyncMock(
+            return_value=mock_response
+        )
+
+        response = await client.get_events(url="https://api.example.com/api/events/?cursor=abc", changed_at=None)
+        assert response.results == []
+        mock_httpx.return_value.__aenter__.return_value.get.assert_awaited_with(
+            "https://api.example.com/api/events/?cursor=abc",
+            params=None,
+            headers={"x-api-key": "test"}
+        )

@@ -45,10 +45,10 @@ class EventsModel(Base):
     number_of_visitors: Mapped[int] = mapped_column(
         "visitors_count", Integer, default=0
     )
-    # status: Mapped[EventStatus] = mapped_column(
-    #     Enum(EventStatus, native_enum=False), default=EventStatus.published
-    # )
-    status: Mapped[str] = mapped_column(Text, default="published")
+    status: Mapped[EventStatus] = mapped_column(
+        Enum(EventStatus, native_enum=False), default=EventStatus.published
+    )
+
 
 
 class SyncMetadataModel(Base):

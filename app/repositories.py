@@ -85,7 +85,7 @@ class SyncRepositories:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def update_sync_info(self, last_changed_at: datetime, status: str):
+    async def update_sync_info(self, last_changed_at: str, status: str):
         if isinstance(last_changed_at, str):
             try:
                 last_changed_at = datetime.fromisoformat(

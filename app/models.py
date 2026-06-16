@@ -1,10 +1,9 @@
-from datetime import datetime
 import enum
 import uuid
+from datetime import datetime
 from typing import Annotated
 from sqlalchemy import Text, Enum, DateTime, func, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-
 
 pk_id = Annotated[uuid.UUID, mapped_column(primary_key=True, default=uuid.uuid4)]
 timestamp = Annotated[
@@ -48,7 +47,6 @@ class EventsModel(Base):
     status: Mapped[EventStatus] = mapped_column(
         Enum(EventStatus, native_enum=False), default=EventStatus.published
     )
-
 
 
 class SyncMetadataModel(Base):

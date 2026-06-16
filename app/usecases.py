@@ -1,12 +1,15 @@
 import uuid
+from datetime import datetime
+from typing import Optional
 
-from .protocols import (
+from app.models import EventStatus
+from app.protocols import (
     EventRepositoryProtocol,
     EventsProviderClientProtocol,
     SyncRepositoryProtocol,
 )
-from .client import EventPaginator, EventProviderClient
-from .repositories import TicketRepository, EventRepository
+from app.client import EventPaginator, EventProviderClient
+from app.repositories import TicketRepository, EventRepository
 
 
 class SyncEventUsecase:
@@ -55,7 +58,7 @@ class CreateTicketUsecase:
             seat: str,
     ):
         event = await self.event_repo.get_by_id(event_id)
-        if not event or event.status != "published":
+        if not event or event.status != EventStatus.published:
             raise Exception("Cобытие не найдено")
 
         ticket_id = await self.client.register(

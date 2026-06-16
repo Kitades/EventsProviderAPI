@@ -1,26 +1,30 @@
 import uuid
-from datetime import datetime
 from typing import Optional
-
+from datetime import datetime
 from fastapi import APIRouter, Depends, Query, HTTPException
 
-from app.client import EventProviderClient
 from app.dependencies import (
     get_sync_usecase,
     get_ticket_usecase,
-    get_event_repository,
-    get_event_client,
-    get_cancel_ticket_usecase, get_get_events_usecase, get_get_event_detail_usecase, get_get_seats_usecase,
+    get_cancel_ticket_usecase,
+    get_get_events_usecase,
+    get_get_event_detail_usecase,
+    get_get_seats_usecase,
 )
-from app.repositories import EventRepository
 from app.schemas import (
     EventResponseSchema,
     EventSeatsResponse,
     EventsListResponseSchema,
     TicketCreateRequest,
 )
-from app.usecases import SyncEventUsecase, CreateTicketUsecase, CancelTicketUsecase, GetEventsUsecase, \
-    GetEventDetailUsecase, GetSeatsUsecase
+from app.usecases import (
+    SyncEventUsecase,
+    CreateTicketUsecase,
+    CancelTicketUsecase,
+    GetEventsUsecase,
+    GetEventDetailUsecase,
+    GetSeatsUsecase
+)
 
 router = APIRouter()
 

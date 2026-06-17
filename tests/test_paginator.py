@@ -14,8 +14,7 @@ def mock_client():
 @pytest.mark.asyncio
 async def test_paginator_first_page(mock_client):
     mock_client.get_events.return_value = ProviderResponse(
-        results=[{"id": 1, "name": "Event 1"}],
-        next_cursor="cursor_2"
+        results=[{"id": 1, "name": "Event 1"}], next_cursor="cursor_2"
     )
 
     paginator = EventPaginator(client=mock_client, start_cursor="2020-01-01")
@@ -25,10 +24,7 @@ async def test_paginator_first_page(mock_client):
 
     assert len(events) == 1
     assert events[0]["id"] == 1
-    mock_client.get_events.assert_awaited_once_with(
-        url=None,
-        changed_at="2020-01-01"
-    )
+    mock_client.get_events.assert_awaited_once_with(url=None, changed_at="2020-01-01")
 
 
 @pytest.mark.asyncio

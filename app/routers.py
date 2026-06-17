@@ -1,17 +1,16 @@
 import uuid
-from typing import Optional
 from datetime import datetime
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.dependencies import (
+    get_cancel_ticket_usecase,
+    get_get_event_detail_usecase,
+    get_get_events_usecase,
+    get_get_seats_usecase,
     get_sync_usecase,
     get_ticket_usecase,
-    get_cancel_ticket_usecase,
-    get_get_events_usecase,
-    get_get_event_detail_usecase,
-    get_get_seats_usecase,
 )
 from app.schemas import (
     EventResponseSchema,
@@ -20,12 +19,12 @@ from app.schemas import (
     TicketCreateRequest,
 )
 from app.usecases import (
-    SyncEventUsecase,
-    CreateTicketUsecase,
     CancelTicketUsecase,
-    GetEventsUsecase,
+    CreateTicketUsecase,
     GetEventDetailUsecase,
-    GetSeatsUsecase
+    GetEventsUsecase,
+    GetSeatsUsecase,
+    SyncEventUsecase,
 )
 
 router = APIRouter()
@@ -63,8 +62,8 @@ async def create_ticket(
 async def get_events(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1),
-    date_from: Optional[datetime] = None,
-    usecase: GetEventsUsecase = Depends(get_get_events_usecase)
+    date_from: datetime | None = None,
+    usecase: GetEventsUsecase = Depends(get_get_events_usecase),
 ):
     result = await usecase.execute(page, page_size, date_from)
     base_url = "/api/events"
@@ -74,26 +73,26 @@ async def get_events(
         params = {"page": page + 1, "page_size": page_size}
         if date_from:
             params["date_from"] = date_from.isoformat()
-        next_url = f'{base_url}?{urlencode(params)}'
+        next_url = f"{base_url}?{urlencode(params)}"
 
     if result["has_prev"]:
         params = {"page": page - 1, "page_size": page_size}
         if date_from:
             params["date_from"] = date_from.isoformat()
-        prev_url = f'{base_url}?{urlencode(params)}'
+        prev_url = f"{base_url}?{urlencode(params)}"
 
     return {
-        "count": result['count'],
+        "count": result["count"],
         "next": next_url,
         "previous": prev_url,
-        "results": result["results"]
+        "results": result["results"],
     }
 
 
 @router.get("/api/events/{event_id}", response_model=EventResponseSchema)
 async def get_event_detail(
     event_id: uuid.UUID,
-    usecase: GetEventDetailUsecase = Depends(get_get_event_detail_usecase)
+    usecase: GetEventDetailUsecase = Depends(get_get_event_detail_usecase),
 ):
     event = await usecase.execute(event_id)
     if not event:
@@ -103,8 +102,7 @@ async def get_event_detail(
 
 @router.get("/api/events/{event_id}/seats", response_model=EventSeatsResponse)
 async def get_seats(
-    event_id: uuid.UUID,
-    usecase: GetSeatsUsecase = Depends(get_get_seats_usecase)
+    event_id: uuid.UUID, usecase: GetSeatsUsecase = Depends(get_get_seats_usecase)
 ):
     seats = await usecase.execute(event_id)
     if seats is None:

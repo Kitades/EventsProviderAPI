@@ -1,23 +1,22 @@
 import uuid
 from datetime import datetime
-from typing import Optional
 
+from app.client import EventPaginator, EventProviderClient
 from app.models import EventStatus
 from app.protocols import (
     EventRepositoryProtocol,
     EventsProviderClientProtocol,
     SyncRepositoryProtocol,
 )
-from app.client import EventPaginator, EventProviderClient
-from app.repositories import TicketRepository, EventRepository
+from app.repositories import EventRepository, TicketRepository
 
 
 class SyncEventUsecase:
     def __init__(
-            self,
-            client: EventsProviderClientProtocol,
-            event_repo: EventRepositoryProtocol,
-            sync_repo: SyncRepositoryProtocol,
+        self,
+        client: EventsProviderClientProtocol,
+        event_repo: EventRepositoryProtocol,
+        sync_repo: SyncRepositoryProtocol,
     ):
         self.client = client
         self.event_repo = event_repo
@@ -40,22 +39,22 @@ class SyncEventUsecase:
 
 class CreateTicketUsecase:
     def __init__(
-            self,
-            client: EventsProviderClientProtocol,
-            event_repo: EventRepositoryProtocol,
-            ticket_repo: TicketRepository,
+        self,
+        client: EventsProviderClientProtocol,
+        event_repo: EventRepositoryProtocol,
+        ticket_repo: TicketRepository,
     ):
         self.client = client
         self.event_repo = event_repo
         self.ticket_repo = ticket_repo
 
     async def execute(
-            self,
-            event_id: uuid.UUID,
-            first_name: str,
-            last_name: str,
-            email: str,
-            seat: str,
+        self,
+        event_id: uuid.UUID,
+        first_name: str,
+        last_name: str,
+        email: str,
+        seat: str,
     ):
         event = await self.event_repo.get_by_id(event_id)
         if not event or event.status != EventStatus.published:
@@ -72,7 +71,7 @@ class CreateTicketUsecase:
 
 class CancelTicketUsecase:
     def __init__(
-            self, client: EventsProviderClientProtocol, ticket_repo: TicketRepository
+        self, client: EventsProviderClientProtocol, ticket_repo: TicketRepository
     ):
         self.client = client
         self.ticket_repo = ticket_repo
@@ -91,13 +90,13 @@ class GetEventsUsecase:
     def __init__(self, event_repo: EventRepository):
         self.event_repo = event_repo
 
-    async def execute(self, page: int, page_size: int, date_from: Optional[datetime] = None):
+    async def execute(
+        self, page: int, page_size: int, date_from: datetime | None = None
+    ):
         limit = page_size
         offset = (page - 1) * page_size
         total_count, events = await self.event_repo.get_all(
-            date_from=date_from,
-            limit=limit,
-            offset=offset
+            date_from=date_from, limit=limit, offset=offset
         )
         has_next = offset + limit < total_count
         has_prev = page > 1

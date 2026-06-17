@@ -22,3 +22,60 @@ dev = [
     "pytest-asyncio>=1.3.0",
     "ruff>=0.15.12",
 ]
+
+[tool.ruff]
+# Путь к файлам, которые обрабатываем
+extend-include = ["*.py", "*.pyi"]
+# Исключаем стандартные папки
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+# Выбранные правила линтинга (можно расширить)
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "D",   # pydocstyle (docstring)
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+# Игнорируем некоторые правила (например, слишком строгие)
+ignore = [
+    "E501",   # line too long (используем форматтер, но можно оставить)
+    "D100",   # missing docstring in public module
+    "D104",   # missing docstring in public package
+    "D203",   # 1 blank line required before class docstring (не конфликтует с форматтером)
+]
+# Максимальная длина строки (по PEP 8 – 79, но можно 88 как у Black)
+line-length = 88
+
+# Настройки isort
+[tool.ruff.isort]
+known-first-party = ["app", "tests"]
+
+# Настройки pydocstyle (docstring)
+[tool.ruff.pydocstyle]
+convention = "google"  # или "numpy", "pep257"
+
+# Настройки форматирования (аналог Black)
+[tool.ruff.format]
+# Использовать одинарные кавычки для строк (можно оставить "preserve")
+quote-style = "preserve"
+# Отступы в docstring
+docstring-code-format = true
+# Добавлять запятые в конце
+indent-style = "space"
+# Пропускать пробелы вокруг операторов (как в Black)
+skip-magic-trailing-comma = false
+# Выравнивание
+line-ending = "auto"

@@ -1,8 +1,9 @@
 import uuid
-from datetime import datetime, UTC
-from typing import Tuple, Optional
-from sqlalchemy import select, func, delete
+from datetime import UTC, datetime
+
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models import EventsModel, SyncMetadataModel, SyncStatus, TicketModel
 
 
@@ -16,8 +17,8 @@ class EventRepository:
         return result.scalar_one_or_none()
 
     async def get_all(
-        self, date_from: Optional[datetime], limit: int, offset: int
-    ) -> Tuple[int, list]:
+        self, date_from: datetime | None, limit: int, offset: int
+    ) -> tuple[int, list]:
         query = select(EventsModel)
         if date_from:
             query = query.where(EventsModel.event_time >= date_from)

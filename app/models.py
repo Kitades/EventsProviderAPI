@@ -2,8 +2,9 @@ import enum
 import uuid
 from datetime import datetime
 from typing import Annotated
-from sqlalchemy import Text, Enum, DateTime, func, Integer, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
+
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Text, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 pk_id = Annotated[uuid.UUID, mapped_column(primary_key=True, default=uuid.uuid4)]
 timestamp = Annotated[

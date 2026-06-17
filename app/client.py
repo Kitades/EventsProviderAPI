@@ -1,22 +1,21 @@
 import time
 import uuid
-import httpx
-from typing import Optional, List, Dict
 from urllib.parse import urljoin
+
+import httpx
+
 from app.schemas import ProviderResponse
 
 
 class EventProviderClient:
-    _seats_cache: Dict[str, tuple[float, List[str]]] = {}
+    _seats_cache: dict[str, tuple[float, list[str]]] = {}
 
     def __init__(self, base_url: str, api_key: str):
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.headers = {"x-api-key": api_key}
 
     async def get_events(
-        self,
-        url: Optional[str] = None,
-        changed_at: Optional[str] = None
+        self, url: str | None = None, changed_at: str | None = None
     ) -> ProviderResponse:
         if url is None:
             url = urljoin(self.base_url, "/api/events/")
@@ -32,7 +31,7 @@ class EventProviderClient:
                 results=data.get("results", []), next_cursor=data.get("next")
             )
 
-    async def get_event_seats(self, event_id: uuid.UUID) -> List[str]:
+    async def get_event_seats(self, event_id: uuid.UUID) -> list[str]:
         cache_key = str(event_id)
         now = time.time()
         if cache_key in self._seats_cache:

@@ -1,16 +1,17 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.client import EventProviderClient
 from app.config import settings
 from app.database import get_db
 from app.repositories import EventRepository, SyncRepositories, TicketRepository
 from app.usecases import (
-    SyncEventUsecase,
-    CreateTicketUsecase,
     CancelTicketUsecase,
-    GetEventsUsecase,
+    CreateTicketUsecase,
     GetEventDetailUsecase,
-    GetSeatsUsecase
+    GetEventsUsecase,
+    GetSeatsUsecase,
+    SyncEventUsecase,
 )
 
 
@@ -25,17 +26,17 @@ def get_event_repository(db: AsyncSession = Depends(get_db)):
 
 
 def get_sync_usecase(
-        event_repo: EventRepository = Depends(get_event_repository),
-        db: AsyncSession = Depends(get_db),
-        client: EventProviderClient = Depends(get_event_client),
+    event_repo: EventRepository = Depends(get_event_repository),
+    db: AsyncSession = Depends(get_db),
+    client: EventProviderClient = Depends(get_event_client),
 ):
     sync_repo = SyncRepositories(db)
     return SyncEventUsecase(client, event_repo, sync_repo)
 
 
 def get_ticket_usecase(
-        db: AsyncSession = Depends(get_db),
-        client: EventProviderClient = Depends(get_event_client),
+    db: AsyncSession = Depends(get_db),
+    client: EventProviderClient = Depends(get_event_client),
 ):
     event_repo = EventRepository(db)
     ticket_repo = TicketRepository(db)
@@ -43,26 +44,26 @@ def get_ticket_usecase(
 
 
 def get_cancel_ticket_usecase(
-        db: AsyncSession = Depends(get_db),
-        client: EventProviderClient = Depends(get_event_client),
+    db: AsyncSession = Depends(get_db),
+    client: EventProviderClient = Depends(get_event_client),
 ):
     ticket_repo = TicketRepository(db)
     return CancelTicketUsecase(client, ticket_repo)
 
 
 def get_get_events_usecase(
-        repo: EventRepository = Depends(get_event_repository),
+    repo: EventRepository = Depends(get_event_repository),
 ):
     return GetEventsUsecase(repo)
 
 
 def get_get_event_detail_usecase(
-        repo: EventRepository = Depends(get_event_repository),
+    repo: EventRepository = Depends(get_event_repository),
 ):
     return GetEventDetailUsecase(repo)
 
 
 def get_get_seats_usecase(
-        client: EventProviderClient = Depends(get_event_client),
+    client: EventProviderClient = Depends(get_event_client),
 ):
     return GetSeatsUsecase(client)

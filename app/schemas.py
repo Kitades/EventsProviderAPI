@@ -1,7 +1,9 @@
 import uuid
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, ConfigDict, model_validator
 from datetime import datetime
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, model_validator
+
 from app.models import EventStatus
 
 
@@ -10,7 +12,7 @@ class PlaceSchema(BaseModel):
     name: str
     city: str
     address: str
-    seats_pattern: Optional[str] = None
+    seats_pattern: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -51,15 +53,15 @@ class EventResponseSchema(BaseModel):
 
 
 class ProviderResponse(BaseModel):
-    results: List[Dict[str, Any]]
-    next_cursor: Optional[str]
+    results: list[dict[str, Any]]
+    next_cursor: str | None
 
 
 class EventsListResponseSchema(BaseModel):
     count: int
-    next: Optional[str] = None
-    previous: Optional[str] = None
-    results: List[EventResponseSchema]
+    next: str | None = None
+    previous: str | None = None
+    results: list[EventResponseSchema]
 
 
 class TicketCreateRequest(BaseModel):
@@ -72,4 +74,4 @@ class TicketCreateRequest(BaseModel):
 
 class EventSeatsResponse(BaseModel):
     event_id: uuid.UUID
-    available_seats: List[str]
+    available_seats: list[str]

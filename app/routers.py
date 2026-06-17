@@ -1,6 +1,8 @@
 import uuid
 from typing import Optional
 from datetime import datetime
+from urllib.parse import urlencode
+
 from fastapi import APIRouter, Depends, Query, HTTPException
 
 from app.dependencies import (
@@ -65,7 +67,27 @@ async def get_events(
     usecase: GetEventsUsecase = Depends(get_get_events_usecase)
 ):
     result = await usecase.execute(page, page_size, date_from)
-    return result
+    base_url = "/api/events"
+    next_url = None
+    prev_url = None
+    if result["has_next"]:
+        params = {"page": page + 1, "page_size": page_size}
+        if date_from:
+            params["date_from"] = date_from.isoformat()
+        next_url = f'{base_url}?{urlencode(params)}'
+
+    if result["has_prev"]:
+        params = {"page": page - 1, "page_size": page_size}
+        if date_from:
+            params["date_from"] = date_from.isoformat()
+        prev_url = f'{base_url}?{urlencode(params)}'
+
+    return {
+        "count": result['count'],
+        "next": next_url,
+        "previous": prev_url,
+        "results": result["results"]
+    }
 
 
 @router.get("/api/events/{event_id}", response_model=EventResponseSchema)

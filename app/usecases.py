@@ -95,24 +95,20 @@ class GetEventsUsecase:
         limit = page_size
         offset = (page - 1) * page_size
         total_count, events = await self.event_repo.get_all(
-            date_from=date_from, limit=limit, offset=offset
+            date_from=date_from,
+            limit=limit,
+            offset=offset
         )
-
-        base_url = "/api/events"
-        next_page = f"{base_url}?page={page + 1}&page_size={page_size}"
-        if date_from:
-            next_page += f"&date_from={date_from.isoformat()}"
-        prev_page = (
-            f"{base_url}?page={page - 1}&page_size={page_size}" if page > 1 else None
-        )
-        if date_from and prev_page:
-            prev_page += f"&date_from={date_from.isoformat()}"
-
+        has_next = offset + limit < total_count
+        has_prev = page > 1
         return {
             "count": total_count,
-            "next": next_page if offset + limit < total_count else None,
-            "previous": prev_page,
             "results": events,
+            "has_next": has_next,
+            "has_prev": has_prev,
+            "current_page": page,
+            "page_size": page_size,
+            "date_from": date_from,
         }
 
 

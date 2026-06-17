@@ -1,13 +1,17 @@
 from fastapi import Depends
-
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.client import EventProviderClient
 from app.config import settings
 from app.database import get_db
 from app.repositories import EventRepository, SyncRepositories, TicketRepository
-from app.usecases import SyncEventUsecase, CreateTicketUsecase, CancelTicketUsecase, GetEventsUsecase, \
-    GetEventDetailUsecase, GetSeatsUsecase
+from app.usecases import (
+    SyncEventUsecase,
+    CreateTicketUsecase,
+    CancelTicketUsecase,
+    GetEventsUsecase,
+    GetEventDetailUsecase,
+    GetSeatsUsecase
+)
 
 
 def get_event_client():

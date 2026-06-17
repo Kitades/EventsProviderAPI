@@ -1,10 +1,8 @@
 import uuid
 from datetime import datetime, UTC
 from typing import Tuple, Optional
-
 from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.models import EventsModel, SyncMetadataModel, SyncStatus, TicketModel
 
 

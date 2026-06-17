@@ -1,8 +1,7 @@
+import uuid
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, ConfigDict, model_validator
 from datetime import datetime
-import uuid
-
 from app.models import EventStatus
 
 

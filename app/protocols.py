@@ -1,6 +1,6 @@
+from datetime import datetime
 import typing
 import uuid
-from datetime import datetime
 
 
 class EventRepositoryProtocol(typing.Protocol):

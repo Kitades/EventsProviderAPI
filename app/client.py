@@ -1,6 +1,6 @@
 import time
-import uuid
 from urllib.parse import urljoin
+import uuid
 
 import httpx
 

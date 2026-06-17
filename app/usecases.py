@@ -1,5 +1,5 @@
-import uuid
 from datetime import datetime
+import uuid
 
 from app.client import EventPaginator, EventProviderClient
 from app.models import EventStatus

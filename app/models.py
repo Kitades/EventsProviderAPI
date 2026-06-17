@@ -1,7 +1,7 @@
-import enum
-import uuid
 from datetime import datetime
+import enum
 from typing import Annotated
+import uuid
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column

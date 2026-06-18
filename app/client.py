@@ -1,8 +1,9 @@
-import time
-from urllib.parse import urljoin
+# isort: off
 import uuid
-
+import time
 import httpx
+# isort: on
+from urllib.parse import urljoin
 
 from app.schemas import ProviderResponse
 
@@ -11,15 +12,15 @@ class EventProviderClient:
     _seats_cache: dict[str, tuple[float, list[str]]] = {}
 
     def __init__(self, base_url: str, api_key: str):
-        self.base_url = base_url.rstrip("/")
-        self.headers = {"x-api-key": api_key}
+        self.base_url = base_url.rstrip('/')
+        self.headers = {'x-api-key': api_key}
 
     async def get_events(
-        self, url: str | None = None, changed_at: str | None = None
+            self, url: str | None = None, changed_at: str | None = None
     ) -> ProviderResponse:
         if url is None:
-            url = urljoin(self.base_url, "/api/events/")
-            params = {"changed_at": changed_at} if changed_at else None
+            url = urljoin(self.base_url, '/api/events/')
+            params = {'changed_at': changed_at} if changed_at else None
         else:
             params = None
 
@@ -28,7 +29,7 @@ class EventProviderClient:
             response.raise_for_status()
             data = response.json()
             return ProviderResponse(
-                results=data.get("results", []), next_cursor=data.get("next")
+                results=data.get('results', []), next_cursor=data.get('next')
             )
 
     async def get_event_seats(self, event_id: uuid.UUID) -> list[str]:
@@ -39,7 +40,7 @@ class EventProviderClient:
             if now - timestamp < 30:
                 return seats
 
-        url = urljoin(self.base_url, f"/api/events/{event_id}/seats/")
+        url = urljoin(self.base_url, f'/api/events/{event_id}/seats/')
         async with httpx.AsyncClient() as client:
             response = await client.get(url, headers=self.headers)
             if response.status_code == 404:
@@ -51,10 +52,10 @@ class EventProviderClient:
                 items = data
             elif isinstance(data, dict):
                 items = (
-                    data.get("seats")
-                    or data.get("available_seats")
-                    or data.get("results")
-                    or []
+                        data.get('seats')
+                        or data.get('available_seats')
+                        or data.get('results')
+                        or []
                 )
             else:
                 items = []
@@ -62,10 +63,10 @@ class EventProviderClient:
             for item in items:
                 if isinstance(item, dict):
                     seat_id = (
-                        item.get("id")
-                        or item.get("seat")
-                        or item.get("name")
-                        or str(item)
+                            item.get('id')
+                            or item.get('seat')
+                            or item.get('name')
+                            or str(item)
                     )
                     seats.append(seat_id)
                 else:
@@ -75,35 +76,35 @@ class EventProviderClient:
             return seats
 
     async def register(
-        self,
-        event_id: uuid.UUID,
-        first_name: str,
-        last_name: str,
-        email: str,
-        seat: str,
+            self,
+            event_id: uuid.UUID,
+            first_name: str,
+            last_name: str,
+            email: str,
+            seat: str,
     ) -> str:
-        url = urljoin(self.base_url, f"/api/events/{event_id}/register/")
+        url = urljoin(self.base_url, f'/api/events/{event_id}/register/')
         payload = {
-            "first_name": first_name,
-            "last_name": last_name,
-            "email": email,
-            "seat": seat,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            'seat': seat,
         }
         async with httpx.AsyncClient() as client:
             response = await client.post(url, json=payload, headers=self.headers)
             response.raise_for_status()
             data = response.json()
-            ticket_id = data.get("ticket_id") or data.get("id")
+            ticket_id = data.get('ticket_id') or data.get('id')
             if not ticket_id:
-                raise ValueError("No ticket_id in response")
+                raise ValueError('No ticket_id in response')
             return ticket_id
 
     async def cancel_registration(self, event_id: uuid.UUID, ticket_id: str) -> bool:
-        url = urljoin(self.base_url, f"/api/events/{event_id}/unregister/")
-        payload = {"ticket_id": ticket_id}
+        url = urljoin(self.base_url, f'/api/events/{event_id}/unregister/')
+        payload = {'ticket_id': ticket_id}
         async with httpx.AsyncClient() as client:
             response = await client.request(
-                "DELETE", url, json=payload, headers=self.headers
+                'DELETE', url, json=payload, headers=self.headers
             )
             if response.status_code == 200:
                 return True

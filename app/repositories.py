@@ -4,7 +4,13 @@ import uuid
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import EventsModel, SyncMetadataModel, SyncStatus, TicketModel
+from app.models import (
+    EventsModel,
+    EventStatus,
+    SyncMetadataModel,
+    SyncStatus,
+    TicketModel,
+)
 
 
 class EventRepository:
@@ -35,34 +41,38 @@ class EventRepository:
     async def upsert(self, event_data: dict):
         data = event_data.copy()
 
-        place = data.pop("place", None)
+        place = data.pop('place', None)
         if place and isinstance(place, dict):
-            data["place_id"] = uuid.UUID(place.get("id"))
-            data["place_name"] = place.get("name")
-            data["city"] = place.get("city")
-            data["address"] = place.get("address")
-            data["seats_pattern"] = place.get("seats_pattern")
+            data['place_id'] = uuid.UUID(place.get('id'))
+            data['place_name'] = place.get('name')
+            data['city'] = place.get('city')
+            data['address'] = place.get('address')
+            data['seats_pattern'] = place.get('seats_pattern')
 
-        for field in ["event_time", "registration_deadline"]:
+        for field in ['event_time', 'registration_deadline']:
             if field in data and isinstance(data[field], str):
-                data[field] = datetime.fromisoformat(data[field].replace("Z", "+00:00"))
+                data[field] = datetime.fromisoformat(data[field].replace('Z', '+00:00'))
 
         extra_fields = [
-            "changed_at",
-            "created_at",
-            "updated_at",
-            "deleted_at",
-            "cursor",
-            "status_changed_at",
-            "modified_at",
-            "published_at",
+            'changed_at',
+            'created_at',
+            'updated_at',
+            'deleted_at',
+            'cursor',
+            'status_changed_at',
+            'modified_at',
+            'published_at',
         ]
-        if "status" in data:
-            data["status"] = data["status"][:9]
+        if 'status' in data:
+            try:
+                data['status'] = EventStatus(data['status']).value
+            except ValueError:
+                data['status'] = EventStatus.cancelled.value
+
         for field in extra_fields:
             data.pop(field, None)
 
-        event_id = data.get("id")
+        event_id = data.get('id')
         if event_id:
             event = await self.get_by_id(event_id)
             if event:
@@ -88,11 +98,11 @@ class SyncRepositories:
         if isinstance(last_changed_at, str):
             try:
                 last_changed_at = datetime.fromisoformat(
-                    last_changed_at.replace("Z", "+00:00")
+                    last_changed_at.replace('Z', '+00:00')
                 )
             except ValueError:
                 last_changed_at = datetime.strptime(
-                    last_changed_at, "%Y-%m-%d"
+                    last_changed_at, '%Y-%m-%d'
                 ).replace(tzinfo=UTC)
 
         if not self.session.is_active:
@@ -101,7 +111,7 @@ class SyncRepositories:
         sync_log = SyncMetadataModel(
             last_sync_time=datetime.now(UTC),
             last_changed_at=last_changed_at,
-            status=SyncStatus.success if status == "success" else SyncStatus.error,
+            status=SyncStatus.success if status == 'success' else SyncStatus.error,
         )
         self.session.add(sync_log)
         await self.session.commit()
@@ -119,7 +129,7 @@ class SyncRepositories:
         meta = await self.get_last_metadata()
         if not meta or not meta.last_changed_at:
             return None
-        return meta.last_changed_at.strftime("%Y-%m-%d")
+        return meta.last_changed_at.strftime('%Y-%m-%d')
 
 
 class TicketRepository:

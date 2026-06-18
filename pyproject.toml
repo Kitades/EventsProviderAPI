@@ -54,11 +54,13 @@ relative-imports-order = "closest-to-furthest"
 force-sort-within-sections = true
 combine-as-imports = true
 lines-between-types = 1
+known-first-party = ["app"]
 
 [tool.ruff.format]
 quote-style = "single"
 indent-style = "space"
 skip-magic-trailing-comma = false
+
 
 [tool.ruff.lint]
 fixable = ["ALL"]

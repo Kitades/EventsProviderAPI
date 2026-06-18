@@ -28,25 +28,25 @@ class EventResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    @model_validator(mode="before")
+    @model_validator(mode='before')
     @classmethod
     def bundle_place_fields(cls, data):
-        if hasattr(data, "place_id"):
+        if hasattr(data, 'place_id'):
             return {
-                "id": data.id,
-                "name": data.name,
-                "event_time": data.event_time,
-                "registration_deadline": data.registration_deadline,
-                "status": data.status,
-                "number_of_visitors": getattr(
-                    data, "number_of_visitors", getattr(data, "visitors_count", 0)
+                'id': data.id,
+                'name': data.name,
+                'event_time': data.event_time,
+                'registration_deadline': data.registration_deadline,
+                'status': data.status,
+                'number_of_visitors': getattr(
+                    data, 'number_of_visitors', getattr(data, 'visitors_count', 0)
                 ),
-                "place": {
-                    "id": data.place_id,
-                    "name": data.place_name,
-                    "city": data.city,
-                    "address": data.address,
-                    "seats_pattern": data.seats_pattern,
+                'place': {
+                    'id': data.place_id,
+                    'name': data.place_name,
+                    'city': data.city,
+                    'address': data.address,
+                    'seats_pattern': data.seats_pattern,
                 },
             }
         return data

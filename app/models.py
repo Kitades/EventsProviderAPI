@@ -1,7 +1,9 @@
-from datetime import datetime
+# isort: off
 import enum
-from typing import Annotated
 import uuid
+from datetime import datetime
+from typing import Annotated
+# isort: on
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -13,15 +15,15 @@ timestamp = Annotated[
 
 
 class EventStatus(enum.Enum):
-    published = "published"
-    cancelled = "cancelled"
-    finished = "finished"
-    registration_closed = "registration_closed"
+    published = 'published'
+    cancelled = 'cancelled'
+    finished = 'finished'
+    registration_closed = 'registration_closed'
 
 
 class SyncStatus(enum.Enum):
-    success = "success"
-    error = "error"
+    success = 'success'
+    error = 'error'
 
 
 class Base(DeclarativeBase):
@@ -29,7 +31,7 @@ class Base(DeclarativeBase):
 
 
 class EventsModel(Base):
-    __tablename__ = "event"
+    __tablename__ = 'event'
     id: Mapped[pk_id]
     name: Mapped[str] = mapped_column(Text, nullable=False)
 
@@ -43,7 +45,7 @@ class EventsModel(Base):
     registration_deadline: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     number_of_visitors: Mapped[int] = mapped_column(
-        "visitors_count", Integer, default=0
+        'visitors_count', Integer, default=0
     )
     status: Mapped[EventStatus] = mapped_column(
         Enum(EventStatus, native_enum=False), default=EventStatus.published
@@ -51,7 +53,7 @@ class EventsModel(Base):
 
 
 class SyncMetadataModel(Base):
-    __tablename__ = "sync"
+    __tablename__ = 'sync'
     id: Mapped[pk_id]
     last_sync_time: Mapped[timestamp]
     last_changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -59,9 +61,9 @@ class SyncMetadataModel(Base):
 
 
 class TicketModel(Base):
-    __tablename__ = "ticket"
+    __tablename__ = 'ticket'
     id: Mapped[pk_id]
-    event_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("event.id"))
+    event_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('event.id'))
     first_name: Mapped[str]
     last_name: Mapped[str]
     email: Mapped[str]

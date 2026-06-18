@@ -23,17 +23,17 @@ class SyncEventUsecase:
         self.sync_repo = sync_repo
 
     async def execute(self):
-        cursor = await self.sync_repo.get_last_cursor() or "2000-01-01"
+        cursor = await self.sync_repo.get_last_cursor() or '2000-01-01'
         paginator = EventPaginator(self.client, start_cursor=cursor)
         last_event_date = cursor
         try:
             async for event_data in paginator:
                 await self.event_repo.upsert(event_data)
-                last_event_date = event_data.get("changed_at", last_event_date)
+                last_event_date = event_data.get('changed_at', last_event_date)
 
-            await self.sync_repo.update_sync_info(last_event_date, "success")
+            await self.sync_repo.update_sync_info(last_event_date, 'success')
         except Exception:
-            await self.sync_repo.update_sync_info(last_event_date, "error")
+            await self.sync_repo.update_sync_info(last_event_date, 'error')
             raise
 
 
@@ -58,7 +58,7 @@ class CreateTicketUsecase:
     ):
         event = await self.event_repo.get_by_id(event_id)
         if not event or event.status != EventStatus.published:
-            raise Exception("Cобытие не найдено")
+            raise Exception('Cобытие не найдено')
 
         ticket_id = await self.client.register(
             event_id, first_name, last_name, email, seat
@@ -101,13 +101,13 @@ class GetEventsUsecase:
         has_next = offset + limit < total_count
         has_prev = page > 1
         return {
-            "count": total_count,
-            "results": events,
-            "has_next": has_next,
-            "has_prev": has_prev,
-            "current_page": page,
-            "page_size": page_size,
-            "date_from": date_from,
+            'count': total_count,
+            'results': events,
+            'has_next': has_next,
+            'has_prev': has_prev,
+            'current_page': page,
+            'page_size': page_size,
+            'date_from': date_from,
         }
 
 

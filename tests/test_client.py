@@ -10,14 +10,13 @@ from app.schemas import ProviderResponse
 async def test_get_events_with_changed_at():
     client = EventProviderClient(base_url='https://api.example.com', api_key='test')
     with patch('httpx.AsyncClient') as mock_httpx_client_class:
-        # Создаём мок для ответа (синхронные методы)
         mock_response = Mock()
         mock_response.json = Mock(
             return_value={'results': [{'id': 1}], 'next': 'cursor'}
         )
         mock_response.raise_for_status = Mock()
 
-        # Создаём мок для клиента (асинхронный)
+
         mock_client = AsyncMock()
         mock_client.get = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)

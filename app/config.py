@@ -17,13 +17,13 @@ class WebAppSettings(BaseSettings):
         populate_by_name=True,
     )
 
-    def get_db_url(self):
+    def get_db_url(self) -> str:
         return self.database_url
 
-    def get_return_api_key(self):
+    def get_return_api_key(self) -> str:
         return self.api_key
 
-    def get_provider_url(self):
+    def get_provider_url(self) -> str:
         return self.provider_url
 
 

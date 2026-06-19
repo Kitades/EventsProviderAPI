@@ -1,6 +1,6 @@
-from datetime import datetime
 import typing
 import uuid
+from datetime import datetime
 
 
 class EventRepositoryProtocol(typing.Protocol):
@@ -10,11 +10,11 @@ class EventRepositoryProtocol(typing.Protocol):
         self, date_from: datetime | None, limit: int, offset: int
     ) -> tuple[int, list]: ...
 
-    async def upsert(self, date: dict) -> None: ...
+    async def upsert(self, data: dict) -> None: ...
 
 
 class EventsProviderClientProtocol(typing.Protocol):
-    async def events(self, cursor) -> typing.Any: ...
+    async def events(self, cursor: str | None) -> typing.Any: ...
 
     async def register(
         self,

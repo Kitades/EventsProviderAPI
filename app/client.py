@@ -1,9 +1,8 @@
-# isort: off
-import uuid
 import time
-import httpx
-# isort: on
+import uuid
 from urllib.parse import urljoin
+
+import httpx
 
 from app.schemas import ProviderResponse
 
@@ -16,7 +15,7 @@ class EventProviderClient:
         self.headers = {'x-api-key': api_key}
 
     async def get_events(
-            self, url: str | None = None, changed_at: str | None = None
+        self, url: str | None = None, changed_at: str | None = None
     ) -> ProviderResponse:
         if url is None:
             url = urljoin(self.base_url, '/api/events/')
@@ -29,10 +28,11 @@ class EventProviderClient:
             response.raise_for_status()
             data = response.json()
             return ProviderResponse(
-                results=data.get('results', []), next_cursor=data.get('next')
+                results=data.get('results', []),
+                next_cursor=data.get('next'),
             )
 
-    async def get_event_seats(self, event_id: uuid.UUID) -> list[str]:
+    async def get_event_seats(self, event_id: uuid.UUID) -> list[str] | None:
         cache_key = str(event_id)
         now = time.time()
         if cache_key in self._seats_cache:
@@ -52,21 +52,22 @@ class EventProviderClient:
                 items = data
             elif isinstance(data, dict):
                 items = (
-                        data.get('seats')
-                        or data.get('available_seats')
-                        or data.get('results')
-                        or []
+                    data.get('seats')
+                    or data.get('available_seats')
+                    or data.get('results')
+                    or []
                 )
             else:
                 items = []
+
             seats = []
             for item in items:
                 if isinstance(item, dict):
                     seat_id = (
-                            item.get('id')
-                            or item.get('seat')
-                            or item.get('name')
-                            or str(item)
+                        item.get('id')
+                        or item.get('seat')
+                        or item.get('name')
+                        or str(item)
                     )
                     seats.append(seat_id)
                 else:
@@ -76,12 +77,12 @@ class EventProviderClient:
             return seats
 
     async def register(
-            self,
-            event_id: uuid.UUID,
-            first_name: str,
-            last_name: str,
-            email: str,
-            seat: str,
+        self,
+        event_id: uuid.UUID,
+        first_name: str,
+        last_name: str,
+        email: str,
+        seat: str,
     ) -> str:
         url = urljoin(self.base_url, f'/api/events/{event_id}/register/')
         payload = {
@@ -125,7 +126,7 @@ class EventPaginator:
     def __aiter__(self):
         return self
 
-    async def __anext__(self):
+    async def __anext__(self) -> dict:
         while not self.buffer and not self.is_exhausted:
             if self.next_url is None:
                 response = await self.client.get_events(

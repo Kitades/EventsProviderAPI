@@ -17,7 +17,8 @@ from app.usecases import (
 
 def get_event_client():
     return EventProviderClient(
-        base_url=settings.get_provider_url(), api_key=settings.get_return_api_key()
+        base_url=settings.get_provider_url(),
+        api_key=settings.get_return_api_key(),
     )
 
 

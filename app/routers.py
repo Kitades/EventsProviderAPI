@@ -1,6 +1,6 @@
+import uuid
 from datetime import datetime
 from urllib.parse import urlencode
-import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -102,7 +102,8 @@ async def get_event_detail(
 
 @router.get('/api/events/{event_id}/seats', response_model=EventSeatsResponse)
 async def get_seats(
-    event_id: uuid.UUID, usecase: GetSeatsUsecase = Depends(get_get_seats_usecase)
+    event_id: uuid.UUID,
+    usecase: GetSeatsUsecase = Depends(get_get_seats_usecase),
 ):
     seats = await usecase.execute(event_id)
     if seats is None:
